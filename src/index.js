@@ -6,7 +6,10 @@ const { enableLiveReload } = require('electron-compile');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
-
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  // application specific logging, throwing an error, or other logic here
+});
 const isDevMode = process.execPath.match(/[\\/]electron/);
 
 if (isDevMode) enableLiveReload({ strategy: 'react-hmr' });
@@ -15,11 +18,11 @@ const createWindow = async () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 600,
-	  webPreferences:{nodeIntegration: true}
+    height: 800,
+    webPreferences: { nodeIntegration: true }
   });
   // and load the index.html of the app.
-	var url = 'file://'+__dirname+'/index.html';
+  var url = 'file://' + __dirname + '/index.html';
   mainWindow.loadURL(url);
   // Open the DevTools.
   if (isDevMode) {
