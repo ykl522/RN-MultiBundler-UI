@@ -176,6 +176,12 @@ class App extends React.Component {
               }
             }
           }
+          // this.setState({ type: e.target.value });
+          // if (e.target.value == 'base') {
+          //   this.setState({ entry: this.projPackageDir + path.sep + 'platformDep-ui.js' });
+          // } else {
+          //   this.setState({ entry: '' });
+          // }
         } catch (e) {
           alert(e)
         }
@@ -263,6 +269,18 @@ class App extends React.Component {
     this.setState({ depsChecked: e });
   }
 
+  renderDep1() {
+    const { deps, depsChecked, type } = this.state;
+    let options = deps;
+    let defaultChecked = ['react', 'react-native'];
+    if (type == 'buz') {//业务包不可能把react打进去
+      options = options.filter((value) => !(value == 'react' || value == 'react-native'
+        || value.value == 'react' || value.value == 'react-native'));
+      defaultChecked = undefined;
+    }
+    return <CheckboxGroup options={options} onChange={this.onDepCheckChange} defaultValue={defaultChecked} />
+  }
+
   renderDep() {
     const { deps, type } = this.state;
     let options = [...deps];
@@ -286,11 +304,11 @@ class App extends React.Component {
 
   getAllDeps(platformDepArray, lockDeps) {
     let allPlatformDep = [];
-    let travelStack = platformDepArray;
+    let travelStack = [...platformDepArray];
     while (travelStack.length != 0) {
       let depItem = travelStack.pop();
       allPlatformDep.push(depItem);
-      console.log('depItem', depItem);
+      console.log('depItem==> ' + depItem);
       let depDetail = lockDeps[depItem];
       if (depDetail == null) {
         console.log('depItem no found', depItem);
@@ -301,19 +319,20 @@ class App extends React.Component {
         travelStack = travelStack.concat(_.difference(Object.keys(depReq), allPlatformDep));//difference防止循环依赖
       }
     }
+    console.log('allPlatformDep: ' + JSON.stringify(allPlatformDep));
     return _.uniq(allPlatformDep);
   }
 
-  startPackage(isRead) {
+  startPackage() {
     this.setState({ cmdStr: '' });
     const { exec } = require('child_process');
     const { platform, env, entry, type, bundleDir, assetsDir, depsChecked } = this.state;
     let bundleName = this.bundleNameInput.state.value || (type == 'buz' ?
       (entry.substring(entry.indexOf('index'), entry.indexOf('.js')) + `_V${this.versionInput.state.value || '0'}.android.bundle`)
       : 'platform.android.bundle');
-    console.log('bundleName', bundleName
-      , 'platform', platform, 'env', env, 'entry', entry, 'type', type, 'bundleDir', bundleDir, 'assetsDir', assetsDir
-      , 'depsChecked', depsChecked);
+    // console.log('bundleName', bundleName
+    //   , 'platform', platform, 'env', env, 'entry', entry, 'type', type, 'bundleDir', bundleDir, 'assetsDir', assetsDir
+    //   , 'depsChecked', depsChecked);
     if (entry == null) {
       alert("请选择打包的js入口");
       return;
@@ -363,9 +382,6 @@ class App extends React.Component {
     let cmdStr = 'node ./node_modules/react-native/local-cli/cli.js bundle  --platform ' + platform
       + ' --dev ' + env + ' --entry-file ' + entry + ' --bundle-output ' + bundleDir + path.sep + bundleName
       + ' --assets-dest ' + assetsDir + ' --config ' + this.projPackageDir + path.sep + bundleConifgName;
-    if (isRead) {
-      return cmdStr
-    }
     this.setState({ loading: true });
     this.state.cmd = cmdStr
     // alert(cmdStr)

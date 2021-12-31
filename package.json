@@ -6,6 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
+    "dev": "electron-forge start -i -l",
     "package": "electron-forge package",
     "package:mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --out=out --osx-sign.identity='Developer ID Application: GitHub' ",
     "package:win": "electron-packager . --overwrite --platform=win32 --arch=ia32 --out=out --icon=assets/app-icon/win/app.ico",
@@ -50,7 +51,7 @@
     }
   },
   "dependencies": {
-    "cross-spawn": "^5.0.1",
+    "cross-spawn": "^7.0.3",
     "antd": "^3.12.4",
     "electron": "^1.8.7",
     "electron-compile": "^6.4.4",
