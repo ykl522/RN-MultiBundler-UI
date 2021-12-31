@@ -3,3 +3,4 @@ out
 .eslintcache
 *.log
 *.lock
+package-lock.json
