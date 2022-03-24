@@ -5,6 +5,7 @@ const CheckboxGroup = Checkbox.Group;
 const { remote } = require("electron");
 
 const path = require('path');
+const JSZIP = require("jszip");
 const fs = require("fs");
 var _ = require('lodash');
 const { TextArea } = Input;
@@ -12,7 +13,7 @@ const packageLockFileName = 'package-lock.json';
 const packageFileName = 'package.json';
 import { workSpace } from './config'
 let curBinDirName = workSpace || __dirname;
-
+// 排除部分文件或文件夹
 //1 bin 2 0.58 0.59 3 demo
 class App extends React.Component {
 
@@ -53,23 +54,25 @@ class App extends React.Component {
 		let openType = 'openDirectory';
 		let filter = undefined;
 		let title = '清选择RN工程目录';
-		this.initDir(curBinDirName)
-		// remote.dialog.showOpenDialog(
-		// 	remote.getCurrentWindow(),
-		// 	{
-		// 		defaultPath: curBinDirName,
-		// 		title: title,
-		// 		buttonLabel: '选择',
-		// 		filters: filter,
-		// 		properties: [openType]
-		// 	},
-		// 	(filePath) => {
-		// 		if (filePath) {
-		// 			const directory = filePath[0];
-		// 			this.initDir(directory);
-		// 		}
-		// 	}
-		// )
+		// setTimeout(() => {
+		// 	this.initDir(curBinDirName)
+		// }, 2000)
+		remote.dialog.showOpenDialog(
+			remote.getCurrentWindow(),
+			{
+				defaultPath: curBinDirName,
+				title: title,
+				buttonLabel: '选择',
+				filters: filter,
+				properties: [openType]
+			},
+			(filePath) => {
+				if (filePath) {
+					const directory = filePath[0];
+					this.initDir(directory);
+				}
+			}
+		)
 	}
 
 	initDir(curDir) {
@@ -142,10 +145,10 @@ class App extends React.Component {
 	renderPlatformSelect() {
 		return (<Radio.Group defaultValue="android" buttonStyle="solid"
 			onChange={(e) => {
-				console.log('renderPlatformSelect', e.target.value);
+				console.log('renderPlatformSelect---> ' + e.target.value);
+				this.state.platform = e.target.value
 				this.setState({ platform: e.target.value });
-			}
-			}>
+			}}>
 			<Radio.Button value="android">Android</Radio.Button>
 			<Radio.Button value="ios">iOS</Radio.Button>
 		</Radio.Group>);
@@ -380,6 +383,7 @@ class App extends React.Component {
 		let bundleName = this.bundleNameInput.state.value || (type == 'buz' ?
 			(entry.substring(entry.indexOf('index'), entry.indexOf('.js')) + `_V${this.versionInput.state.value || '0'}.android.bundle`)
 			: 'platform.android.bundle');
+		this.state.bundleName = bundleName
 		// console.log('bundleName', bundleName
 		//   , 'platform', platform, 'env', env, 'entry', entry, 'type', type, 'bundleDir', bundleDir, 'assetsDir', assetsDir
 		//   , 'depsChecked', depsChecked);
@@ -535,6 +539,104 @@ class App extends React.Component {
 		// });
 	}
 
+	// zip 递归读取文件夹下的文件流
+	readDir(zip, nowPath) {
+		// 读取目录中的所有文件及文件夹（同步操作）
+		console.log('----------read-----------')
+		let files = fs.readdirSync(nowPath)
+		//遍历检测目录中的文件
+		files.filter(name => !name.includes('.zip')).forEach((fileName, index) => {
+			// 打印当前读取的文件名
+			console.log(fileName, index)
+			// 当前文件的全路径
+			let fillPath = path.join(nowPath, fileName)
+			// 获取一个文件的属性
+			let file = fs.statSync(fillPath)
+			// 如果是目录的话，继续查询
+			if (file.isDirectory()) {
+				// 压缩对象中生成该目录
+				let dirlist = zip.folder(fileName)
+				// （递归）重新检索目录文件
+				this.readDir(dirlist, fillPath)
+			} else {
+				// 压缩目录添加文件
+				zip.file(fileName, fs.readFileSync(fillPath))
+			}
+		})
+		console.log('+---------read----------+')
+	}
+
+	deleteDir(nowPath) {
+		// 读取目录中的所有文件及文件夹（同步操作）
+		let files = fs.readdirSync(nowPath)
+		//遍历检测目录中的文件
+		console.log('----------delete-----------')
+		files.filter(name => !name.includes('.zip')).forEach((fileName, index) => {
+			// 打印当前读取的文件名
+			// 当前文件的全路径
+			let fillPath = path.join(nowPath, fileName)
+			// 获取一个文件的属性
+			let file = fs.statSync(fillPath)
+			// 如果是目录的话，继续查询
+			if (file.isDirectory()) {
+				// （递归）重新检索目录文件
+				this.deleteDir(fillPath)
+				fs.rmdirSync(fillPath)
+				console.log(fileName)
+			} else {
+				// 压缩目录添加文件
+				fs.unlinkSync(fillPath)
+				console.log(index + "---" + fileName)
+			}
+		})
+		console.log('+---------delete----------+')
+	}
+
+	// 开始压缩文件
+	zipFolder(target = __dirname, output = __dirname + '/result.zip') {
+		// 创建 zip 实例
+		const zip = new JSZIP()
+		// zip 递归读取文件夹下的文件流
+		this.readDir(zip, target)
+		// 设置压缩格式，开始打包
+		zip.generateAsync({
+			// nodejs 专用
+			type: 'nodebuffer',
+			// 压缩算法
+			compression: 'DEFLATE',
+			// 压缩级别
+			compressionOptions: { level: 9, },
+		}).then(content => {
+			// 将打包的内容写入 当前目录下的 result.zip中
+			fs.writeFileSync(output, content, 'utf-8')
+
+		}).catch(e => {
+			alert(e)
+		})
+	}
+
+	formatZero(num, len) {
+		if (String(num).length > len) return num;
+		return (Array(len).join(0) + num).slice(-len);
+	}
+
+	//更新Map版本号
+	updateModuleIdConfig(inputValue) {
+		if (!inputValue) inputValue = '0'
+		//只取两位
+		if (inputValue && inputValue.length > 2) inputValue = inputValue.substring(0, 2)
+		let configPath = curBinDirName + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
+		let json = fs.readFileSync(configPath, 'utf8')
+		let config = JSON.parse(json)
+		let selectFileName = this.state.entry + ''
+		const id = selectFileName.substring(selectFileName.indexOf('index') + 5, selectFileName.indexOf('.js'))
+		config[selectFileName.substring(selectFileName.lastIndexOf('\\') + 1)] = Number(id + this.formatZero(inputValue, 2) + '000')
+		let newJson = JSON.stringify(config, null, 2)
+		// alert(newJson)
+		fs.writeFileSync(configPath, newJson, 'utf8')
+		fs.unlinkSync(curBinDirName + path.sep + 'multibundler' + path.sep + 'index' + id + 'Map.json')
+	}
+
 	render() {
 		return (<div style={{ paddingLeft: 30, paddingTop: 18, display: 'flex', flexDirection: 'column' }}>
 			{this.renderItem('平台', this.renderPlatformSelect())}
@@ -543,7 +645,17 @@ class App extends React.Component {
 			<div style={{ display: 'flex', flexDirection: 'row' }}>
 				{this.renderItema('入口', this.renderFileSelect('entry'))}
 				<div style={{ width: '20px' }} ></div>
-				{this.renderItem('版本', <Input ref={ref => this.versionInput = ref} />)}
+				{this.state.type == 'buz' ? this.renderItem('版本', <Input ref={ref => this.versionInput = ref} onChange={(e) => {
+					if (e.target.value) {
+						this.state.assetsDir = curBinDirName + '\\remotebundles'
+						this.state.bundleDir = curBinDirName + '\\remotebundles'
+					} else {
+						this.state.assetsDir = this.projPackageDir + path.sep + 'android\\app\\src\\main\\res'
+						this.state.bundleDir = this.projPackageDir + path.sep + 'android\\app\\src\\main\\assets'
+					}
+					this.setState({})
+					this.updateModuleIdConfig(e.target.value)
+				}} />) : null}
 
 			</div>
 			{this.renderItem('bundle目录', this.renderFileSelect('bundle'))}
@@ -582,9 +694,32 @@ class App extends React.Component {
 					// alert(JSON.stringify(this.state.defaultChecked, null, 2))
 					// this.setState({})
 				}}>全选</Button>
-				<Button style={{ marginTop: 12, marginLeft: 10, width: 100 }} loading={this.state.loading} onClick={() => {
+				<Button style={{ marginTop: 12, marginLeft: 10, width: 100 }} onClick={() => {
 					alert(JSON.stringify(this.state.depsChecked, null, 2))
 				}}>查看选择</Button>
+				<Button style={{ marginTop: 12, marginLeft: 10, width: 120 }} onClick={() => {
+					remote.shell.openItem(this.state.bundleDir)
+				}}>跳转打包目录</Button>
+				{this.state.type == 'buz' ? <Button style={{ marginTop: 12, marginLeft: 10, width: 130 }} onClick={() => {
+					// remote.shell.openItem(curBinDirName + '\\remotebundles')
+					const packageDir = curBinDirName + '\\remotebundles\\'
+					fs.readdir(curBinDirName + '\\remotebundles\\drawable-mdpi', 'utf8', (e, files) => {
+						// alert(JSON.stringify(files, null, 2))
+						fs.readdir(curBinDirName + '\\android\\app\\src\\main\\res\\drawable-mdpi', 'utf8', (e, resFiles) => {
+							let zipRes = []
+							files.forEach((file) => {
+								if (resFiles.includes(file)) {
+									fs.unlinkSync(curBinDirName + '\\remotebundles\\drawable-mdpi\\' + file)
+								} else {
+									zipRes.push(file)
+								}
+							})
+							this.zipFolder(packageDir,
+								packageDir + (this.state.bundleName || (this.state.entry.substring(this.state.entry.indexOf('index'), this.state.entry.indexOf('.js')) + `_V${this.versionInput.state.value || '0'}.android.bundle`)) + '.zip')
+							this.deleteDir(packageDir)
+						})
+					})
+				}}>生成业务更新包</Button> : null}
 			</div>
 			{this.renderItem('模块依赖', this.renderDep())}
 			<Button style={{ marginTop: 12, marginLeft: 10, width: 100 }} loading={this.state.loading} onClick={this.startPackage}>打包</Button>
