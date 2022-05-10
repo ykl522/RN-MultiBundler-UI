@@ -10,6 +10,7 @@ const fs = require("fs");
 var _ = require('lodash');
 const { TextArea } = Input;
 const packageLockFileName = 'package-lock.json';
+// const packageLockFileName = 'yarn.lock';
 const packageFileName = 'package.json';
 import { workSpace } from './config'
 let curBinDirName = workSpace || __dirname;
@@ -645,7 +646,7 @@ class App extends React.Component {
 			<div style={{ display: 'flex', flexDirection: 'row' }}>
 				{this.renderItema('入口', this.renderFileSelect('entry'))}
 				<div style={{ width: '20px' }} ></div>
-				{this.state.type == 'buz' ? this.renderItem('版本', <Input ref={ref => this.versionInput = ref} onChange={(e) => {
+				{this.state.type == 'buz' ? this.renderItem('版本', <Input disabled={!this.state.entry} ref={ref => this.versionInput = ref} onChange={(e) => {
 					if (e.target.value) {
 						this.state.assetsDir = curBinDirName + '\\remotebundles'
 						this.state.bundleDir = curBinDirName + '\\remotebundles'
