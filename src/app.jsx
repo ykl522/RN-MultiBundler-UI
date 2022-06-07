@@ -260,7 +260,7 @@ class App extends React.Component {
 		remote.dialog.showOpenDialog(
 			remote.getCurrentWindow(),
 			{
-				defaultPath: this.projDir,
+				defaultPath: this.projDir + (id == 'entry' ? '\\indexs' : ''),
 				title: title,
 				buttonLabel: '选择',
 				filters: filter,
@@ -381,8 +381,9 @@ class App extends React.Component {
 		this.setState({ cmdStr: '' });
 		const { exec } = require('child_process');
 		const { platform, env, type, bundleDir, assetsDir, depsChecked } = this.state;
+		console.log("-----getModuleVersion----" + this.getModuleVersion(entry))
 		let bundleName = this.bundleNameInput.state.value || (type == 'buz' ?
-			(entry.substring(entry.indexOf('index'), entry.indexOf('.js')) + `_V${this.versionInput.state.value || '0'}.android.bundle`)
+			(entry.substring(entry.lastIndexOf('index'), entry.indexOf('.js')) + `_V${this.versionInput.state.value || this.getModuleVersion(entry) || '0'}.android.bundle`)
 			: 'platform.android.bundle');
 		this.state.bundleName = bundleName
 		// console.log('bundleName', bundleName
@@ -458,86 +459,6 @@ class App extends React.Component {
 			this.setState({ cmdStr: cmdRetStrs });
 		});
 
-
-
-
-
-		// this.setState({ cmdStr: '' });
-		// const { exec } = require('child_process');
-		// const { platform, env, entry, type, bundleDir, assetsDir, depsChecked } = this.state;
-		// let bundleName = this.bundleNameInput.state.value || (type == 'buz' ?
-		// 	(entry.substring(entry.indexOf('index'), entry.indexOf('.js')) + `_V${this.versionInput.state.value || '0'}.android.bundle`)
-		// 	: 'platform.android.bundle');
-		// // console.log('bundleName', bundleName
-		// //   , 'platform', platform, 'env', env, 'entry', entry, 'type', type, 'bundleDir', bundleDir, 'assetsDir', assetsDir
-		// //   , 'depsChecked', depsChecked);
-		// if (entry == null) {
-		// 	alert("请选择打包的js入口");
-		// 	return;
-		// }
-		// if (bundleDir == null) {
-		// 	alert("请选择jsbundle的目标目录");
-		// 	return;
-		// }
-		// if (bundleName == null) {
-		// 	alert("请选择jsbundle的文件名称");
-		// 	return;
-		// }
-		// if (assetsDir == null) {
-		// 	alert("请选择资源文件的目标目录");
-		// 	return
-		// }
-		// let bundleConifgName;
-		// let platformDepJsonPath = this.projPackageDir + path.sep + 'platformDep.json';
-		// if (type == 'base') {
-		// 	bundleConifgName = 'platform-ui.config.js';
-		// 	fs.writeFileSync(platformDepJsonPath, JSON.stringify(depsChecked));
-		// 	let platformDepImportPath = this.projPackageDir + path.sep + 'platformDep-import.js';
-		// 	let importStr = '';
-		// 	depsChecked.forEach((moduleStr) => {
-		// 		importStr = importStr + 'import \'' + moduleStr + '\'\n';
-		// 	});
-		// 	fs.writeFileSync(platformDepImportPath, importStr);
-		// } else {
-		// 	bundleConifgName = 'buz-ui.config.js';
-		// 	const platformDepArray = require(platformDepJsonPath);
-		// 	if (!Array.isArray(platformDepArray)) {
-		// 		alert("必须先打基础包");
-		// 		return;//必须先打基础包
-		// 	}
-		// 	if (depsChecked.length > 0) {//需要过滤platformDepArray
-		// 		const packageLockObj = require(this.packageFileLockPath);
-		// 		const lockDeps = packageLockObj['dependencies'];
-		// 		console.log('start deal platform dep');
-		// 		let allPlatformDep = this.getAllDeps(platformDepArray, lockDeps);
-		// 		console.log('start deal buz dep');
-		// 		let allBuzDep = this.getAllDeps(depsChecked, lockDeps);
-		// 		let filteredBuzDep = _.difference(allBuzDep, allPlatformDep);
-		// 		let buzDepJsonPath = this.projPackageDir + path.sep + 'buzDep.json';//业务包依赖的路径
-		// 		fs.writeFileSync(buzDepJsonPath, JSON.stringify(filteredBuzDep));//todo 打包脚本读取该数组
-		// 	}
-		// }
-		// let cmdStr = 'node ./node_modules/react-native/local-cli/cli.js bundle  --platform ' + platform
-		// 	+ ' --dev ' + env + ' --entry-file ' + entry + ' --bundle-output ' + bundleDir + path.sep + bundleName
-		// 	+ ' --assets-dest ' + assetsDir + ' --config ' + this.projPackageDir + path.sep + bundleConifgName;
-		// this.setState({ loading: true });
-		// this.state.cmd = cmdStr
-		// // alert(cmdStr)
-		// let packageProcess = exec(cmdStr, { cwd: this.projDir }, (error, stdout, stderr) => {
-		// 	this.setState({ loading: false });
-		// 	if (error) {
-		// 		console.error(`执行出错: ${error}`);
-		// 		this.setState({ cmdStr: error });
-		// 		return;
-		// 	}
-		// 	console.log(`stdout: ${stdout}`);
-		// 	console.log(`stderr: ${stderr}`);
-		// });
-		// packageProcess.stdout.on('data', (data) => {
-		// 	console.log(`stdout: ${data}`);
-		// 	let cmdRetStrs = data + this.state.cmdStr;
-		// 	this.setState({ cmdStr: cmdRetStrs });
-		// });
 	}
 
 	// zip 递归读取文件夹下的文件流
@@ -630,12 +551,22 @@ class App extends React.Component {
 		let json = fs.readFileSync(configPath, 'utf8')
 		let config = JSON.parse(json)
 		let selectFileName = this.state.entry + ''
-		const id = selectFileName.substring(selectFileName.indexOf('index') + 5, selectFileName.indexOf('.js'))
+		const id = selectFileName.substring(selectFileName.lastIndexOf('index') + 5, selectFileName.indexOf('.js'))
 		config[selectFileName.substring(selectFileName.lastIndexOf('\\') + 1)] = Number(id + this.formatZero(inputValue, 2) + '000')
 		let newJson = JSON.stringify(config, null, 2)
 		// alert(newJson)
 		fs.writeFileSync(configPath, newJson, 'utf8')
 		fs.unlinkSync(curBinDirName + path.sep + 'multibundler' + path.sep + 'index' + id + 'Map.json')
+	}
+
+	//获取Map里面版本号
+	getModuleVersion(selectFileName) {
+		let configPath = curBinDirName + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
+		let json = fs.readFileSync(configPath, 'utf8')
+		let config = JSON.parse(json)
+		const moduleInfo = config[selectFileName.substring(selectFileName.lastIndexOf('\\') + 1)] + ""
+		console.log("moduleInfo--->" + moduleInfo)
+		return Number(moduleInfo.substring(moduleInfo.length - 5, moduleInfo.length - 3)) + ""
 	}
 
 	render() {
@@ -646,7 +577,7 @@ class App extends React.Component {
 			<div style={{ display: 'flex', flexDirection: 'row' }}>
 				{this.renderItema('入口', this.renderFileSelect('entry'))}
 				<div style={{ width: '20px' }} ></div>
-				{this.state.type == 'buz' ? this.renderItem('版本', <Input disabled={!this.state.entry} ref={ref => this.versionInput = ref} onChange={(e) => {
+				{this.state.type == 'buz' ? this.renderItem('版本', <Input disabled={!this.state.entry || (this.state.entry && this.state.entry.includes(',,'))} ref={ref => this.versionInput = ref} onChange={(e) => {
 					if (e.target.value) {
 						this.state.assetsDir = curBinDirName + '\\remotebundles'
 						this.state.bundleDir = curBinDirName + '\\remotebundles'
@@ -716,7 +647,7 @@ class App extends React.Component {
 								}
 							})
 							this.zipFolder(packageDir,
-								packageDir + (this.state.bundleName || (this.state.entry.substring(this.state.entry.indexOf('index'), this.state.entry.indexOf('.js')) + `_V${this.versionInput.state.value || '0'}.android.bundle`)) + '.zip')
+								packageDir + (this.state.bundleName || (this.state.entry.substring(this.state.entry.lastIndexOf('index'), this.state.entry.indexOf('.js')) + `_V${this.versionInput.state.value || '0'}.android.bundle`)) + '.zip')
 							this.deleteDir(packageDir)
 						})
 					})
