@@ -32,7 +32,9 @@ class App extends React.Component {
 			depsChecked: [],
 			cmdStr: '',
 			loading: false,
-			defaultChecked: undefined
+			defaultChecked: undefined,
+			entryErrorIndex: 0,
+			entryErrorIndexs: []
 		};
 		this.onDepCheckChange = this.onDepCheckChange.bind(this);
 		this.selectFile = this.selectFile.bind(this);
@@ -364,6 +366,8 @@ class App extends React.Component {
 		this.entrys = entry.split(",,");
 		this.entryIndex = 0;
 		if (this.entrys.length > 0) {
+			this.state.entryErrorIndex = 0;
+			this.state.entryErrorIndexs = []
 			this.loopPackage();
 		}
 
@@ -371,6 +375,7 @@ class App extends React.Component {
 
 	loopPackage() {
 		if (this.entryIndex >= this.entrys.length) {
+			this.setState({})
 			return;
 		}
 
@@ -445,8 +450,10 @@ class App extends React.Component {
 			this.setState({ loading: false });
 			if (error) {
 				console.error(`执行出错: ${error}`);
+				this.state.entryErrorIndex++;
+				this.state.entryErrorIndexs.push(entry.substring(entry.lastIndexOf('index'), entry.indexOf('.js')))
 				this.setState({ cmdStr: error });
-				return;
+				// return;
 			}
 			console.log(`stdout: ${stdout}`);
 			console.log(`stderr: ${stderr}`);
@@ -654,7 +661,10 @@ class App extends React.Component {
 				}}>生成业务更新包</Button> : null}
 			</div>
 			{this.renderItem('模块依赖', this.renderDep())}
-			<Button style={{ marginTop: 12, marginLeft: 10, width: 100 }} loading={this.state.loading} onClick={this.startPackage}>打包</Button>
+			<div style={{ marginTop: 12, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+				<Button style={{ marginLeft: 10, marginRight: 10, width: 100 }} loading={this.state.loading} onClick={this.startPackage}>打包</Button>
+				<div style={{ color: this.state.entryErrorIndex ? 'red' : 'green' }}>{'打包总共' + this.entrys.length + '个：成功' + (this.entryIndex - this.state.entryErrorIndex) + '个，失败' + this.state.entryErrorIndex + '个' + (this.state.entryErrorIndex ? '，失败index-->' + JSON.stringify(this.state.entryErrorIndexs) : '')}</div>
+			</div>
 			<div>{this.state.cmd}</div>
 			<TextArea value={this.state.cmdStr} rows={4} readonly={true} style={{ marginTop: 12, width: 600 }} />
 		</div>);
