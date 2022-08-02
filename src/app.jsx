@@ -24,7 +24,7 @@ class App extends React.Component {
 			platform: 'android',//平台 android iOS
 			env: 'false',//环境 release debug
 			entry: null,//打包入口
-			type: 'base',//基础包 业务包
+			type: 'base',//基础包 插件包
 			bundleDir: null,//打包后bundle目录
 			bundleName: null,//bundle名
 			assetsDir: null,
@@ -205,7 +205,7 @@ class App extends React.Component {
 			}}
 		>
 			<Radio.Button value="base">基础包</Radio.Button>
-			<Radio.Button value="buz">业务包</Radio.Button>
+			<Radio.Button value="buz">插件包</Radio.Button>
 		</Radio.Group>);
 	}
 	renderFileSelect(id) {
@@ -306,7 +306,7 @@ class App extends React.Component {
 		const { deps, depsChecked, type } = this.state;
 		let options = deps;
 		let defaultChecked = ['react', 'react-native'];
-		if (type == 'buz') {//业务包不可能把react打进去
+		if (type == 'buz') {//插件包不可能把react打进去
 			options = options.filter((value) => !(value == 'react' || value == 'react-native'
 				|| value.value == 'react' || value.value == 'react-native'));
 			defaultChecked = undefined;
@@ -322,7 +322,7 @@ class App extends React.Component {
 			console.log('---' + this.state.depsChecked)
 		}
 		// this.state.depsChecked.push('moment')
-		if (type == 'buz') {//业务包不可能把react打进去
+		if (type == 'buz') {//插件包不可能把react打进去
 			options = options.filter((value) => !(value == 'react' || value == 'react-native'
 				|| value.value == 'react' || value.value == 'react-native'));
 		}
@@ -513,7 +513,7 @@ class App extends React.Component {
 				fs.rmdirSync(fillPath)
 				console.log(fileName)
 			} else {
-				// 压缩目录添加文件
+				// 删除文件
 				fs.unlinkSync(fillPath)
 				console.log(index + "---" + fileName)
 			}
@@ -574,6 +574,19 @@ class App extends React.Component {
 		const moduleInfo = config[selectFileName.substring(selectFileName.lastIndexOf('\\') + 1)] + ""
 		console.log("moduleInfo--->" + moduleInfo)
 		return Number(moduleInfo.substring(moduleInfo.length - 5, moduleInfo.length - 3)) + ""
+	}
+
+	//清空原配置
+	cleanConfig() {
+		let multibundlerPath = curBinDirName + path.sep + 'multibundler' + path.sep
+		let mainConfig = multibundlerPath + 'platformMap.json'
+		fs.writeFileSync(mainConfig, "[]", 'utf8')
+		let files = fs.readdirSync(multibundlerPath)
+		files.filter(name => name.includes('Map.json') && name.includes('index')).forEach((fileName, index) => {
+			let fillPath = path.join(multibundlerPath, fileName)
+			fs.unlinkSync(fillPath)
+		})
+		alert("清除完成，请重新打基础包和插件包")
 	}
 
 	render() {
@@ -658,7 +671,15 @@ class App extends React.Component {
 							this.deleteDir(packageDir)
 						})
 					})
-				}}>生成业务更新包</Button> : null}
+				}}>生成插件更新包</Button> :
+					<Button style={{ marginTop: 12, marginLeft: 10, width: 120 }} onClick={() => {
+						this.cleanConfig()
+					}}>清空原来配置</Button>
+				}
+				<Button style={{ marginTop: 12, marginLeft: 10, width: 120 }} onClick={() => {
+					let json = fs.readFileSync(this.projPackageDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json', 'utf8')
+					alert(JSON.stringify(JSON.parse(json), null, 2))
+				}}>查看模块详情</Button>
 			</div>
 			{this.renderItem('模块依赖', this.renderDep())}
 			<div style={{ marginTop: 12, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
