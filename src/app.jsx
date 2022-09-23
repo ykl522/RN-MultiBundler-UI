@@ -1,8 +1,9 @@
 const React = require('react');
 
-const { Button, Checkbox, Input, Radio, Alert } = require('antd');
+const { Button, Checkbox, Input, Radio, Modal, Dropdown, Space, Menu, message } = require('antd');
 const CheckboxGroup = Checkbox.Group;
 const { remote } = require("electron");
+import { DownOutlined } from '@ant-design/icons';
 
 const path = require('path');
 const JSZIP = require("jszip");
@@ -14,6 +15,17 @@ const packageLockFileName = 'package-lock.json';
 const packageFileName = 'package.json';
 import { workSpace } from './config'
 let curBinDirName = workSpace || __dirname;
+
+const sysItems = [
+	{ label: 'prs', key: '0', },
+	{ label: 'ots', key: '1', },
+	{ label: 'ops', key: '2', },
+	{ label: 'cims', key: '3', },
+	{ label: 'rms', key: '4', },
+	{ label: 'cis', key: '5', },
+	{ label: 'dts', key: '6', },
+]
+
 // 排除部分文件或文件夹
 //1 bin 2 0.58 0.59 3 demo
 class App extends React.Component {
@@ -34,7 +46,9 @@ class App extends React.Component {
 			loading: false,
 			defaultChecked: undefined,
 			entryErrorIndex: 0,
-			entryErrorIndexs: []
+			entryErrorIndexs: [],
+			visible: false,
+			selectedSys: undefined
 		};
 		this.onDepCheckChange = this.onDepCheckChange.bind(this);
 		this.selectFile = this.selectFile.bind(this);
@@ -387,10 +401,12 @@ class App extends React.Component {
 		const { exec } = require('child_process');
 		const { platform, env, type, bundleDir, assetsDir, depsChecked } = this.state;
 		console.log("-----getModuleVersion----" + this.getModuleVersion(entry))
-		let bundleName = this.bundleNameInput.state.value || (type == 'buz' ?
-			(entry.substring(entry.lastIndexOf('index'), entry.indexOf('.js')) + `_V${this.versionInput.state.value || this.getModuleVersion(entry) || '0'}.android.bundle`)
-			: 'platform.android.bundle');
+		let bundleName = this.bundleNameInput.input.value ||
+			(type == 'buz' ?
+				(entry.substring(entry.lastIndexOf('index'), entry.indexOf('.js')) + `_V${this.versionInput.input.value || this.getModuleVersion(entry) || '0'}.android.bundle`)
+				: 'platform.android.bundle');
 		this.state.bundleName = bundleName
+		console.log(type + '------------------' + (bundleName))
 		// console.log('bundleName', bundleName
 		//   , 'platform', platform, 'env', env, 'entry', entry, 'type', type, 'bundleDir', bundleDir, 'assetsDir', assetsDir
 		//   , 'depsChecked', depsChecked);
@@ -414,13 +430,13 @@ class App extends React.Component {
 		let platformDepJsonPath = this.projPackageDir + path.sep + 'platformDep.json';
 		if (type == 'base') {
 			bundleConifgName = 'platform-ui.config.js';
-			fs.writeFileSync(platformDepJsonPath, JSON.stringify(depsChecked));
+			fs.writeFileSync(platformDepJsonPath, JSON.stringify(depsChecked), 'utf8');
 			let platformDepImportPath = this.projPackageDir + path.sep + 'platformDep-import.js';
 			let importStr = '';
 			depsChecked.forEach((moduleStr) => {
 				importStr = importStr + 'import \'' + moduleStr + '\'\n';
 			});
-			fs.writeFileSync(platformDepImportPath, importStr);
+			fs.writeFileSync(platformDepImportPath, importStr, 'utf8');
 		} else {
 			bundleConifgName = 'buz-ui.config.js';
 			const platformDepArray = require(platformDepJsonPath);
@@ -443,6 +459,7 @@ class App extends React.Component {
 		let cmdStr = 'node ./node_modules/react-native/local-cli/cli.js bundle  --platform ' + platform
 			+ ' --dev ' + env + ' --entry-file ' + entry + ' --bundle-output ' + bundleDir + path.sep + bundleName
 			+ ' --assets-dest ' + assetsDir + ' --config ' + this.projPackageDir + path.sep + bundleConifgName;
+		console.log(cmdStr)
 		this.setState({ loading: true });
 		this.state.cmd = cmdStr
 		// alert(cmdStr)
@@ -571,6 +588,7 @@ class App extends React.Component {
 		let configPath = curBinDirName + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
 		let json = fs.readFileSync(configPath, 'utf8')
 		let config = JSON.parse(json)
+		console.log("selectFileName--->" + selectFileName)
 		const moduleInfo = config[selectFileName.substring(selectFileName.lastIndexOf('\\') + 1)] + ""
 		console.log("moduleInfo--->" + moduleInfo)
 		return Number(moduleInfo.substring(moduleInfo.length - 5, moduleInfo.length - 3)) + ""
@@ -589,7 +607,95 @@ class App extends React.Component {
 		alert("清除完成，请重新打基础包和插件包")
 	}
 
+	handleOk() {
+		let { selectedSys, modlePermission, modleName } = this.state
+		if (!modleName) {
+			message.info('请输入模块名称！')
+			return
+		}
+		if (!modlePermission) {
+			message.info('请输入模块权限！')
+			return
+		}
+		if (selectedSys) {
+			let jsonPath = this.projPackageDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json'
+			let jsonStr = fs.readFileSync(jsonPath, 'utf8')
+			let menuList = JSON.parse(jsonStr)
+			if (selectedSys == 'prs') {
+				selectedSys = 'Collection'
+			} else {
+				selectedSys = selectedSys.toLocaleUpperCase()
+			}
+			let newMoudle = { id: 0 }
+			for (let menuInfo of menuList) {
+				if (menuInfo.permission == selectedSys) {
+					// alert(JSON.stringify(menuInfo.childData, null, 2))
+					for (let menuChild of menuInfo.childData) {
+						if (menuChild.id >= newMoudle.id) {
+							newMoudle = {
+								childName: modleName,
+								permission: modlePermission,
+								parent: selectedSys,
+								resKey: 'model_' + modlePermission.replace(/([A-Z])/g, '_$1').toLocaleLowerCase(),
+								id: menuChild.id + 1,
+								version: 0
+							}
+						}
+					}
+					menuInfo.childData.push(newMoudle)
+				}
+			}
+			fs.writeFileSync(jsonPath, JSON.stringify(menuList, null, 2), 'utf-8')
+			this.state.selectedSys = this.state.selectedSys.toLocaleLowerCase()
+			if (this.state.selectedSys == 'cims') {
+				this.state.selectedSys = 'cims2'
+			}
+			let classPath = this.projPackageDir + path.sep + 'app\\page\\' + this.state.selectedSys + '\\' + modlePermission.charAt(0).toLocaleLowerCase() + modlePermission.slice(1)
+			if (!fs.existsSync(classPath))
+				fs.mkdirSync(classPath)
+			fs.writeFileSync(classPath + '\\index.tsx', "import React from 'react'" + '\n'
+				+ "import { NavigationContainer } from '@react-navigation/native';" + '\n'
+				+ "import { createStackNavigator } from '@react-navigation/stack';" + '\n'
+				+ "const Stack = createStackNavigator();" + '\n'
+				+ "const APP = (props: any) => {" + '\n'
+				+ "\treturn (" + '\n'
+				+ "\t\t<NavigationContainer>" + '\n'
+				+ "\t\t\t<Stack.Navigator>" + '\n'
+				+ "\t\t\t</Stack.Navigator>" + '\n'
+				+ "\t\t</NavigationContainer>" + '\n'
+				+ "\t);" + '\n'
+				+ "}" + '\n\n'
+				+ "export default APP;"
+			)
+			let indexPath = this.projPackageDir + path.sep + 'indexs\\index' + newMoudle.id + '.js'
+			fs.writeFileSync(indexPath, "import { AppRegistry } from 'react-native';" + '\n'
+				+ "import { AppWrapper } from '../baseApp';" + '\n'
+				+ "import " + modlePermission + " from '../app/page/" + this.state.selectedSys + '/' + modlePermission.charAt(0).toLocaleLowerCase() + modlePermission.slice(1) + "'\n"
+				+ "AppRegistry.registerComponent('yunexpress_app_" + newMoudle.id + "', () => AppWrapper(" + modlePermission + "));")
+
+		} else {
+			message.info('请选择系统！')
+			return
+		}
+		this.setState({ visible: false, selectedSys: undefined })
+	}
+
+	handleCancel() {
+		this.setState({ visible: false, selectedSys: undefined })
+	}
+
 	render() {
+		const menu = (
+			<Menu
+				selectable
+				onClick={(e) => {
+					if (sysItems[e.key].label) {
+						this.setState({ selectedSys: sysItems[e.key].label })
+					}
+				}}
+				items={sysItems}
+			/>
+		);
 		return (<div style={{ paddingLeft: 30, paddingTop: 18, display: 'flex', flexDirection: 'column' }}>
 			{this.renderItem('平台', this.renderPlatformSelect())}
 			{this.renderItem('环境', this.renderEnvSelect())}
@@ -615,7 +721,7 @@ class App extends React.Component {
 			{this.renderItem('assets目录', this.renderFileSelect('assets'))}
 
 			<div style={{ display: 'flex', flexDirection: 'row' }}>
-				<Button style={{ marginTop: 12, marginLeft: 10, width: 100 }} onClick={() => {
+				<Button style={{ marginTop: 12, marginLeft: 10, width: 100, color: '#555' }} onClick={() => {
 					let newDep = []
 					for (let dep of this.state.deps) {
 						if (typeof dep == 'string') {
@@ -646,13 +752,13 @@ class App extends React.Component {
 					// alert(JSON.stringify(this.state.defaultChecked, null, 2))
 					// this.setState({})
 				}}>全选</Button>
-				<Button style={{ marginTop: 12, marginLeft: 10, width: 100 }} onClick={() => {
+				<Button style={{ marginTop: 12, marginLeft: 10, width: 100, color: '#555' }} onClick={() => {
 					alert(JSON.stringify(this.state.depsChecked, null, 2))
 				}}>查看选择</Button>
-				<Button style={{ marginTop: 12, marginLeft: 10, width: 120 }} onClick={() => {
+				<Button style={{ marginTop: 12, marginLeft: 10, width: 120, color: '#555' }} onClick={() => {
 					remote.shell.openItem(this.state.bundleDir)
 				}}>跳转打包目录</Button>
-				{this.state.type == 'buz' ? <Button style={{ marginTop: 12, marginLeft: 10, width: 130 }} onClick={() => {
+				{this.state.type == 'buz' ? <Button style={{ marginTop: 12, marginLeft: 10, width: 130, color: '#555' }} onClick={() => {
 					// remote.shell.openItem(curBinDirName + '\\remotebundles')
 					const packageDir = curBinDirName + '\\remotebundles\\'
 					fs.readdir(curBinDirName + '\\remotebundles\\drawable-mdpi', 'utf8', (e, files) => {
@@ -667,28 +773,66 @@ class App extends React.Component {
 								}
 							})
 							this.zipFolder(packageDir,
-								packageDir + (this.state.bundleName || (this.state.entry.substring(this.state.entry.lastIndexOf('index'), this.state.entry.indexOf('.js')) + `_V${this.versionInput.state.value || '0'}.android.bundle`)) + '.zip')
+								packageDir + (this.state.bundleName || (this.state.entry.substring(this.state.entry.lastIndexOf('index'), this.state.entry.indexOf('.js')) + `_V${this.versionInput.input.value || '0'}.android.bundle`)) + '.zip')
 							this.deleteDir(packageDir)
 						})
 					})
 				}}>生成插件更新包</Button> :
-					<Button style={{ marginTop: 12, marginLeft: 10, width: 120 }} onClick={() => {
+					<Button style={{ marginTop: 12, marginLeft: 10, width: 120, color: '#555' }} onClick={() => {
 						this.cleanConfig()
 					}}>清空原来配置</Button>
 				}
-				<Button style={{ marginTop: 12, marginLeft: 10, width: 120 }} onClick={() => {
+				<Button style={{ marginTop: 12, marginLeft: 10, width: 120, color: '#555' }} onClick={() => {
 					let json = fs.readFileSync(this.projPackageDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json', 'utf8')
-					alert(JSON.stringify(JSON.parse(json), null, 2))
+					if (confirm(JSON.stringify(JSON.parse(json), null, 2))) {
+						this.setState({ visible: true })
+					}
 				}}>查看模块详情</Button>
 			</div>
 			{this.renderItem('模块依赖', this.renderDep())}
 			<div style={{ marginTop: 12, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-				<Button style={{ marginLeft: 10, marginRight: 10, width: 100 }} loading={this.state.loading} onClick={this.startPackage}>打包</Button>
+				<Button style={{ marginLeft: 10, marginRight: 10, width: 100, color: '#555' }} loading={this.state.loading} onClick={this.startPackage}>打包</Button>
 				<div style={{ color: this.state.entryErrorIndex ? 'red' : 'green' }}>{'打包总共' + this.entrys.length + '个：成功' + (this.entryIndex - this.state.entryErrorIndex) + '个，失败' + this.state.entryErrorIndex + '个' + (this.state.entryErrorIndex ? '，失败index-->' + JSON.stringify(this.state.entryErrorIndexs) : '')}</div>
 			</div>
 			<div>{this.state.cmd}</div>
 			<TextArea value={this.state.cmdStr} rows={4} readonly={true} style={{ marginTop: 12, width: 600 }} />
-		</div>);
+			<Modal
+				title="新增模块"
+				visible={this.state.visible}
+				onOk={this.handleOk.bind(this)}
+				onCancel={this.handleCancel.bind(this)}
+				footer={[
+					<Button key="back" onClick={this.handleCancel.bind(this)}>返回</Button>,
+					<Button key="submit" type="primary" onClick={this.handleOk.bind(this)}>创建</Button>
+				]}
+			>
+				<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+					<text style={{ color: '#555' }}>模块名称：</text>
+					<Input style={{ flex: 1 }} onChange={(e) => {
+						if (e.target) {
+							this.state.modleName = e.target.value
+						}
+					}} />
+				</div>
+				<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: '10px' }}>
+					<text style={{ color: '#555' }}>模块权限：</text>
+					<Input style={{ flex: 1 }} onChange={(e) => {
+						if (e.target) {
+							this.state.modlePermission = e.target.value
+						}
+					}} />
+				</div>
+				<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: '10px' }}>
+					<text style={{ color: '#555' }}>模块系统：</text>
+					<Dropdown overlay={menu} trigger={['click']} selectable>
+						<Space>
+							{this.state.selectedSys || '请选择系统'}
+							<DownOutlined />
+						</Space>
+					</Dropdown>
+				</div>
+			</Modal >
+		</div >);
 	}
 }
 

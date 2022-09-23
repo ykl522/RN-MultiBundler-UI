@@ -13,7 +13,7 @@
     "package:linux": "electron-packager . --overwrite --platform=linux --arch=x64 --out=out",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --cache --color --ext .jsx,.js src"
+    "lint": "eslint --cache --color --ext .jsx,.js,.tsx src"
   },
   "keywords": [],
   "author": "smallnew",
@@ -51,7 +51,7 @@
     }
   },
   "dependencies": {
-    "antd": "^3.12.4",
+    "antd": "^4.22.8",
     "cross-spawn": "^7.0.3",
     "electron": "^1.8.7",
     "electron-compile": "^6.4.4",
@@ -60,8 +60,8 @@
     "fix-path": "^2.1.0",
     "jszip": "^3.7.1",
     "lodash": "^4.17.11",
-    "react": "^15.4.1",
-    "react-dom": "^15.4.1",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
     "react-hot-loader": "^3.0.0-beta.6"
   },
   "devDependencies": {
