@@ -3,6 +3,7 @@ const React = require('react');
 const { Button, Checkbox, Input, Radio, Modal, Dropdown, Space, Menu, message } = require('antd');
 const CheckboxGroup = Checkbox.Group;
 const { remote } = require("electron");
+const { exec } = require('child_process');
 import { DownOutlined } from '@ant-design/icons';
 
 const path = require('path');
@@ -24,6 +25,11 @@ const sysItems = [
 	{ label: 'rms', key: '4', },
 	{ label: 'cis', key: '5', },
 	{ label: 'dts', key: '6', },
+]
+
+const channelItems = [
+	{ label: 'YT', key: '0' },
+	{ label: 'FWS', key: '1' }
 ]
 
 // 排除部分文件或文件夹
@@ -48,7 +54,9 @@ class App extends React.Component {
 			entryErrorIndex: 0,
 			entryErrorIndexs: [],
 			visible: false,
-			selectedSys: undefined
+			selectedSys: undefined,
+			selectedChannel: 'YT',
+			packageStaus: 0	//0默认没有打包 1打包中 2打包成功 -1打包失败
 		};
 		this.onDepCheckChange = this.onDepCheckChange.bind(this);
 		this.selectFile = this.selectFile.bind(this);
@@ -61,6 +69,7 @@ class App extends React.Component {
 		this.renderTypeSelect = this.renderTypeSelect.bind(this);
 		this.renderBundleName = this.renderBundleName.bind(this);
 		this.startPackage = this.startPackage.bind(this);
+		this.startAndroidPackage = this.startAndroidPackage.bind(this);
 		this.initDir = this.initDir.bind(this);
 
 		this.entrys = [];
@@ -387,6 +396,37 @@ class App extends React.Component {
 
 	}
 
+	startAndroidPackage() {
+		this.setState({ loading: true, cmdStr: '' });
+		// let cmdStr = './android/gradlew assembleRelease'
+		let assembleRelease = this.state.selectedChannel == 'FWS' ? 'assembleFWSRelease' : 'assembleYTRelease'
+		let cmdStr = 'chcp 65001 && ' + this.projDir + '\\android\\gradlew ' + assembleRelease
+		const iconv = require('iconv-lite')
+		this.state.packageStaus = 1
+		let packageProcess = exec(cmdStr, { cwd: this.projDir + '\\android', encoding: 'buffer' }, (error, stdout, stderr) => {
+			this.setState({ loading: false });
+			if (error) {
+				this.state.packageStaus = -1
+				message.error('打安装包出错！')
+				console.error(`执行出错: ${iconv.decode(error.message, 'cp936')}`);
+				this.setState({ cmdStr: error });
+				// return;
+			} else {
+				this.state.packageStaus = 2
+				this.setState({ packageStaus: 2 });
+				message.info('打安装包完成！')
+			}
+			console.log(`stdout: ${iconv.decode(stdout, 'CP936')}`);
+			console.log(`stderr: ${iconv.decode(stderr, 'CP936')}`);
+		});
+		packageProcess.stdout.on('data', (data) => {
+			console.log(`stdout: ${data}`);
+			let cmdRetStrs = data + this.state.cmdStr;
+			this.state.cmdStr = cmdRetStrs
+			this.setState({ cmdStr: cmdRetStrs });
+		});
+	}
+
 	loopPackage() {
 		if (this.entryIndex >= this.entrys.length) {
 			this.setState({})
@@ -398,7 +438,6 @@ class App extends React.Component {
 		console.log("*************** package  run  no ** " + (this.entryIndex + 1) + " pkg: " + entry);
 
 		this.setState({ cmdStr: '' });
-		const { exec } = require('child_process');
 		const { platform, env, type, bundleDir, assetsDir, depsChecked } = this.state;
 		console.log("-----getModuleVersion----" + this.getModuleVersion(entry))
 		let bundleName = this.bundleNameInput.input.value ||
@@ -684,6 +723,26 @@ class App extends React.Component {
 		this.setState({ visible: false, selectedSys: undefined })
 	}
 
+	/**
+	 * 获取打包按钮属性
+	 */
+	getPackageBtnText() {
+		let btnText = { name: '打安装包', color: '#555' }
+		switch (this.state.packageStaus) {
+			case 0:
+			case 1:
+				btnText = { name: '打安装包', color: '#555' }
+				break
+			case 2:
+				btnText = { name: '打包成功', color: 'green' }
+				break
+			case -1:
+				btnText = { name: '打包失败', color: 'red' }
+				break
+		}
+		return btnText;
+	}
+
 	render() {
 		const menu = (
 			<Menu
@@ -694,6 +753,17 @@ class App extends React.Component {
 					}
 				}}
 				items={sysItems}
+			/>
+		);
+		const channel = (
+			<Menu
+				selectable
+				onClick={(e) => {
+					if (channelItems[e.key].label) {
+						this.setState({ selectedChannel: channelItems[e.key].label })
+					}
+				}}
+				items={channelItems}
 			/>
 		);
 		return (<div style={{ paddingLeft: 30, paddingTop: 18, display: 'flex', flexDirection: 'column' }}>
@@ -793,6 +863,29 @@ class App extends React.Component {
 			<div style={{ marginTop: 12, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
 				<Button style={{ marginLeft: 10, marginRight: 10, width: 100, color: '#555' }} loading={this.state.loading} onClick={this.startPackage}>打包</Button>
 				<div style={{ color: this.state.entryErrorIndex ? 'red' : 'green' }}>{'打包总共' + this.entrys.length + '个：成功' + (this.entryIndex - this.state.entryErrorIndex) + '个，失败' + this.state.entryErrorIndex + '个' + (this.state.entryErrorIndex ? '，失败index-->' + JSON.stringify(this.state.entryErrorIndexs) : '')}</div>
+			</div>
+			<div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+				<Button style={{ marginLeft: 10, marginRight: 10, marginTop: 10, width: 100, color: this.getPackageBtnText().color }} loading={this.state.loading} onClick={this.startAndroidPackage}>
+					{this.getPackageBtnText().name}
+				</Button>
+				<div style={{ flexDirection: 'row', alignItems: 'center', marginTop: '10px' }}>
+					<text style={{ color: '#555' }}>打包渠道：</text>
+					<Dropdown overlay={channel} trigger={['click']} selectable>
+						<Space>
+							{this.state.selectedChannel || '请选择渠道'}
+							<DownOutlined />
+						</Space>
+					</Dropdown>
+				</div>
+				<Button style={{ marginLeft: 10, marginRight: 10, marginTop: 10, width: 130, color: '#555' }} onClick={() => {
+					let androidPackageDir = '\\android\\app\\build\\outputs\\apk\\YT\\release'
+					if (this.state.selectedChannel == 'FWS') {
+						androidPackageDir = '\\android\\app\\build\\outputs\\apk\\FWS\\release'
+					}
+					if (!remote.shell.openItem(this.projDir + androidPackageDir)) {
+						message.info('目录文件不存在，请先打安装包！')
+					}
+				}}>跳转安装包目录</Button>
 			</div>
 			<div>{this.state.cmd}</div>
 			<TextArea value={this.state.cmdStr} rows={4} readonly={true} style={{ marginTop: 12, width: 600 }} />
