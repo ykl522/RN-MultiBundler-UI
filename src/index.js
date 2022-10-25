@@ -1,3 +1,11 @@
+/*
+ * @Author: 袁康乐 yuankangle@yunexpress.cn
+ * @Date: 2021-07-02 14:48:11
+ * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
+ * @LastEditTime: 2022-10-14 15:15:44
+ * @FilePath: \RN-MultiBundler-UI\src\index.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 const { app, BrowserWindow } = require('electron');
 const { REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
 const installExtension = require('electron-devtools-installer').default;
@@ -17,7 +25,7 @@ if (isDevMode) enableLiveReload({ strategy: 'react-hmr' });
 const createWindow = async () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800,
+    width: 1500,
     height: 1000,
     webPreferences: { nodeIntegration: true }
   });
