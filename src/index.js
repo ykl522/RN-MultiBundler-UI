@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-10-14 15:15:44
+ * @LastEditTime: 2022-10-28 09:33:09
  * @FilePath: \RN-MultiBundler-UI\src\index.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -27,7 +27,7 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     width: 1500,
     height: 1000,
-    webPreferences: { nodeIntegration: true }
+    webPreferences: { nodeIntegration: true, preload: __dirname + '/preload.js' }
   });
   // and load the index.html of the app.
   var url = 'file://' + __dirname + '/index.html';
