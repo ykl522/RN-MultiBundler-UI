@@ -3,17 +3,16 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-10-24 17:50:09
+ * @LastEditTime: 2022-10-28 17:56:53
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-const { Button, Checkbox, Input, Radio, Modal, Dropdown, Space, Menu, message, Tabs } = require('antd');
+const { Button, Checkbox, Input, Radio, Modal, Dropdown, Space, Menu, message, Drawer, Table } = require('antd');
 const CheckboxGroup = Checkbox.Group;
 const { remote } = require("electron");
 const { exec } = require('child_process');
 import { useState, useEffect, useRef } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import QRCode from 'qrcode.react';
 const path = require('path');
 const JSZIP = require("jszip");
 const fs = require("fs");
@@ -72,12 +71,12 @@ export default function PackageView(props) {
             items={channelItems}
         />
     );
-    const entryIndexRef = useRef()
+    const entryIndexRef = useRef(0)
+    const stateRef = useRef({ type: 'base' })
     const [entryIndex, setEntryIndex] = useState(0)
     const [platform, setPlatform] = useState('android') //平台 android iOS
     const [env, setEnv] = useState('false') //环境 release debug
     const [entry, setEntry] = useState(null) //打包入口
-    const [type, setType] = useState('base') //基础包 插件包
     const [bundleDir, setBundleDir] = useState(null) //打包后bundle目录
     const [bundleName, setBundleName] = useState(null) //bundle名
     const [assetsDir, setAssetsDir] = useState(null) //asset目录
@@ -95,29 +94,37 @@ export default function PackageView(props) {
     const [modleName, setModleName] = useState('')
     const [modlePermission, setModlePermission] = useState('')
 
+    const [open, setOpen] = useState(false);
+    const showDrawer = () => {
+        setOpen(true);
+    };
+    const onClose = () => {
+        setOpen(false);
+    };
+
     useEffect(() => {
-        let openType = 'openDirectory';
-        let filter = undefined;
-        let title = '清选择RN工程目录';
+        // let openType = 'openDirectory';
+        // let filter = undefined;
+        // let title = '清选择RN工程目录';
+        initDir(curBinDirName)
         // setTimeout(() => {
-        //   initDir(curBinDirName)
         // }, 2000)
-        remote.dialog.showOpenDialog(
-            remote.getCurrentWindow(),
-            {
-                defaultPath: curBinDirName,
-                title: title,
-                buttonLabel: '选择',
-                filters: filter,
-                properties: [openType]
-            },
-            (filePath) => {
-                if (filePath) {
-                    const directory = filePath[0];
-                    initDir(directory);
-                }
-            }
-        )
+        // remote.dialog.showOpenDialog(
+        //     remote.getCurrentWindow(),
+        //     {
+        //         defaultPath: curBinDirName,
+        //         title: title,
+        //         buttonLabel: '选择',
+        //         filters: filter,
+        //         properties: [openType]
+        //     },
+        //     (filePath) => {
+        //         if (filePath) {
+        //             const directory = filePath[0];
+        //             initDir(directory);
+        //         }
+        //     }
+        // )
     }, [])
 
     let initDir = (curDir) => {
@@ -207,7 +214,9 @@ export default function PackageView(props) {
             onChange={(e) => {
                 console.log('renderEnvSelect-->' + JSON.stringify(e));
                 try {
-                    if (e && e.target) setType(e.target.value)
+                    if (e && e.target) {
+                        stateRef.current.type = e.target.value
+                    }
                     if (e && e.target && e.target.value == 'base') {
                         let temp = 0
                         for (let dep of depsChecked) {
@@ -314,7 +323,7 @@ export default function PackageView(props) {
     }
 
     let onDepCheckChange = (e) => {
-        if (type == 'buz') {
+        if (stateRef.current.type == 'buz') {
             e = e.filter((value) => !(value == 'react' || value == 'react-native'));
         }
         console.log(JSON.stringify(e));
@@ -324,7 +333,7 @@ export default function PackageView(props) {
     let renderDep1 = () => {
         let options = deps;
         let defaultChecked = ['react', 'react-native'];
-        if (type == 'buz') {//插件包不可能把react打进去
+        if (stateRef.current.type == 'buz') {//插件包不可能把react打进去
             options = options.filter((value) => !(value == 'react' || value == 'react-native'
                 || value.value == 'react' || value.value == 'react-native'));
             defaultChecked = undefined;
@@ -334,11 +343,11 @@ export default function PackageView(props) {
 
     let renderDep = () => {
         let options = [...deps];
-        if (type != 'buz' && (!depsChecked || depsChecked.length == 0)) {
+        if (stateRef.current.type != 'buz' && (!depsChecked || depsChecked.length == 0)) {
             setDepsChecked(['react', 'react-native'])
             console.log('---' + depsChecked)
         }
-        if (type == 'buz') {//插件包不可能把react打进去
+        if (stateRef.current.type == 'buz') {//插件包不可能把react打进去
             options = options.filter((value) => !(value == 'react' || value == 'react-native'
                 || value.value == 'react' || value.value == 'react-native'));
         }
@@ -427,11 +436,11 @@ export default function PackageView(props) {
         setCmdStr('')
         console.log("-----getModuleVersion----" + getModuleVersion(entry))
         let bundleName = bundleNameInput.input.value ||
-            (type == 'buz' ?
+            (stateRef.current.type == 'buz' ?
                 (entry.substring(entry.lastIndexOf('index'), entry.indexOf('.js')) + `_V${versionInput.input.value || getModuleVersion(entry) || '0'}.android.bundle`)
                 : 'platform.android.bundle');
         setBundleName(bundleName)
-        console.log(type + '------------------' + (bundleName))
+        console.log(stateRef.current.type + '------------------' + (bundleName))
         // console.log('bundleName', bundleName
         //     , 'platform', platform, 'env', env, 'entry', entry, 'type', type, 'bundleDir', bundleDir, 'assetsDir', assetsDir
         //     , 'depsChecked', depsChecked);
@@ -454,7 +463,7 @@ export default function PackageView(props) {
         let bundleConifgName;
         let platformDepJsonPath = projDir + path.sep + 'platformDep.json';
         console.log('platformDepJsonPath--> ' + platformDepJsonPath)
-        if (type == 'base') {
+        if (stateRef.current.type == 'base') {
             bundleConifgName = 'platform-ui.config.js';
             fs.writeFileSync(platformDepJsonPath, JSON.stringify(depsChecked), 'utf8');
             let platformDepImportPath = projDir + path.sep + 'platformDep-import.js';
@@ -613,6 +622,18 @@ export default function PackageView(props) {
         fs.unlinkSync(curBinDirName + path.sep + 'multibundler' + path.sep + 'index' + id + 'Map.json')
     }
 
+    //新增map
+    let addModuleConfig = (newMoudle) => {
+        if (newMoudle) {
+            let configPath = curBinDirName + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
+            let json = fs.readFileSync(configPath, 'utf8')
+            let config = JSON.parse(json)
+            config[`index${newMoudle.id}.js`] = Number(newMoudle.id + '00000')
+            let newJson = JSON.stringify(config, null, 2)
+            fs.writeFileSync(configPath, newJson, 'utf8')
+        }
+    }
+
     //获取Map里面版本号
     let getModuleVersion = (selectFileName) => {
         let configPath = curBinDirName + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
@@ -698,6 +719,8 @@ export default function PackageView(props) {
                 + "}" + '\n\n'
                 + "export default APP;"
             )
+            //新增map配置
+            addModuleConfig(newMoudle)
             let indexPath = projDir + path.sep + 'indexs\\index' + newMoudle.id + '.js'
             fs.writeFileSync(indexPath, "import { AppRegistry } from 'react-native';" + '\n'
                 + "import { AppWrapper } from '../baseApp';" + '\n'
@@ -753,6 +776,69 @@ export default function PackageView(props) {
         return btnText;
     }
 
+    let getModules = () => {
+        let json = fs.readFileSync(projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json', 'utf8')
+        let obj = JSON.parse(json)
+        const subColumns = [
+            {
+                title: '功能',
+                dataIndex: 'childName',
+                key: 'childName',
+                render: (data) => <a>{data}</a>
+            },
+            {
+                title: 'ID',
+                dataIndex: 'id',
+                key: 'id',
+                sorter: (a, b) => a.id - b.id,
+            },
+            {
+                title: '权限',
+                dataIndex: 'permission',
+                key: 'permission',
+            },
+        ]
+        const columns = [
+            {
+                title: '系统',
+                dataIndex: 'groupName',
+                key: 'groupName',
+            },
+            {
+                title: '权限',
+                dataIndex: 'permission',
+                key: 'permission',
+            },
+            {
+                title: 'Key',
+                dataIndex: 'resKey',
+                key: 'resKey',
+            },
+            // {
+            //     title: '模块',
+            //     dataIndex: 'childData',
+            //     key: 'childData',
+            //     // render: (data) => {
+            //     //     return <Table columns={subColumns} dataSource={data} />
+            //     // }
+            // },
+        ]
+        return (
+            <Table
+                bordered
+                columns={columns}
+                pagination={false}
+                dataSource={obj}
+                rowKey={'resKey'}
+                expandable={{
+                    expandedRowRender: (data) => <Table bordered size={'small'} pagination={false} columns={subColumns} dataSource={data.childData} />,
+                    rowExpandable: (data) => data.childData != null,
+                    expandRowByClick: true
+                }}
+            />
+        )
+    }
+
     return (
         <div style={{ paddingLeft: 30, paddingTop: 0, display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -763,7 +849,7 @@ export default function PackageView(props) {
             <div style={{ display: 'flex', flexDirection: 'row' }}>
                 {renderItema('入口', renderFileSelect('entry'))}
                 <div style={{ width: '20px' }} ></div>
-                {type == 'buz' ? renderItem('版本', <Input disabled={!entry || (entry && entry.includes(',,'))} ref={ref => versionInput = ref} onChange={(e) => {
+                {stateRef.current.type == 'buz' ? renderItem('版本', <Input disabled={!entry || (entry && entry.includes(',,'))} ref={ref => versionInput = ref} onChange={(e) => {
                     if (e.target.value) {
                         setAssetsDir(curBinDirName + '\\remotebundles')
                         setBundleDir(curBinDirName + '\\remotebundles')
@@ -789,7 +875,7 @@ export default function PackageView(props) {
                             newDep.push(dep)
                         }
                     }
-                    if (type == 'buz') {
+                    if (stateRef.current.type == 'buz') {
                         if ((depsChecked.length == 2 && depsChecked[0] == 'react' && depsChecked[1] == 'react-native')) {
                             setDepsChecked([])
                         }
@@ -817,7 +903,7 @@ export default function PackageView(props) {
                 <Button style={{ marginTop: 12, marginLeft: 10, width: 120, color: '#555' }} onClick={() => {
                     remote.shell.openItem(bundleDir)
                 }}>跳转打包目录</Button>
-                {type == 'buz' ? <Button style={{ marginTop: 12, marginLeft: 10, width: 130, color: '#555' }} onClick={() => {
+                {stateRef.current.type == 'buz' ? <Button style={{ marginTop: 12, marginLeft: 10, width: 130, color: '#555' }} onClick={() => {
                     // remote.shell.openItem(curBinDirName + '\\remotebundles')
                     const packageDir = curBinDirName + '\\remotebundles\\'
                     fs.readdir(curBinDirName + '\\remotebundles\\drawable-mdpi', 'utf8', (e, files) => {
@@ -842,11 +928,11 @@ export default function PackageView(props) {
                     }}>清空原来配置</Button>
                 }
                 <Button style={{ marginTop: 12, marginLeft: 10, width: 120, color: '#555' }} onClick={() => {
-                    let json = fs.readFileSync(projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json', 'utf8')
-                    if (confirm(JSON.stringify(JSON.parse(json), null, 2))) {
-                        setVisible(true)
-                    }
+                    showDrawer()
                 }}>查看模块详情</Button>
+                <Button style={{ marginTop: 12, marginLeft: 10, width: 100, color: '#555' }} onClick={() => {
+                    setVisible(true)
+                }}>新增模块</Button>
             </div>
             <div style={{ marginTop: '12px' }}>模块依赖:</div>
             {renderItem(null, renderDep())}
@@ -873,7 +959,8 @@ export default function PackageView(props) {
                     }
                 }}>跳转安装包目录</Button>
                 <Button style={{ marginLeft: 10, marginRight: 10, marginTop: 10, width: 100, color: '#555' }} onClick={() => {
-                    message.info('正在上传，请稍候...')
+                    // message.info('正在上传，请稍候...')
+                    props.goUpload && props.goUpload()
                 }}>上传</Button>
             </div>
             <div>{cmd}</div>
@@ -914,6 +1001,9 @@ export default function PackageView(props) {
                     </Dropdown>
                 </div>
             </Modal >
+            <Drawer title="模块信息" width={700} placement="right" onClose={onClose} open={open}>
+                {getModules()}
+            </Drawer>
         </div >
     )
 }
