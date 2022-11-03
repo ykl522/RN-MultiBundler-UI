@@ -69,13 +69,16 @@ export default function LanguageView(props) {
                         for (let objItem of objArray) {
                             if (objItem) {
                                 let kvs = objItem.split('\t')
-                                if (kvs.length > 2) {
+                                if (kvs.length > 2 && kvs[2][0]) {
                                     objStr += `${kvs[0]}: "${kvs[2].replace(kvs[2][0], kvs[2][0].toLocaleUpperCase())}",\n`
                                 } else {
                                     let value = objItem.substring(objItem.indexOf('\t') + 1)
-                                    let newValue = value.replace(value[0], value[0].toLocaleUpperCase())
-                                    objItem = objItem.replace(value, newValue)
-                                    objStr += objItem.replace('\t', ': "') + '",\n'
+                                    //首字母转大写
+                                    if (value && value[0]) {
+                                        let newValue = value.replace(value[0], value[0].toLocaleUpperCase())
+                                        objItem = objItem.replace(value, newValue)
+                                        objStr += objItem.replace('\t', ': "') + '",\n'
+                                    }
                                 }
                             }
                         }
@@ -100,10 +103,10 @@ export default function LanguageView(props) {
                         for (let objItem of objArray) {
                             if (objItem) {
                                 let kvs = objItem.split('\t')
-                                if (kvs.length > 2) {
+                                if (kvs.length > 2 && kvs[2][0]) {
                                     obj[kvs[0]] = { zh: kvs[1], en: kvs[2] }
                                     objStr = objStr + `\t${kvs[0]}: {\n\t\tzh: "${kvs[1]}",\n\t\ten: "${kvs[2].replace(kvs[2][0], kvs[2][0].toLocaleUpperCase())}"\n\t},\n`
-                                } else {
+                                } else if (kvs[1][0]) {
                                     obj[kvs[0]] = { en: kvs[1].replace(kvs[1][0], kvs[1][0].toLocaleUpperCase()) }
                                     setI18nWordTextArea(JSON.stringify(obj, null, 2))
                                     return
