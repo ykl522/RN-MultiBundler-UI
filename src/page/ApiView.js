@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-27 09:55:52
  * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-10-28 17:19:15
+ * @LastEditTime: 2022-11-03 16:07:22
  * @FilePath: \RN-MultiBundler-UI\src\page\ApiView.js
  * @Description: Api调试
  */
@@ -29,7 +29,7 @@ export default function ApiView() {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: 30, paddingRight: 30 }}>
             {contextHolder}
-            <Input placeholder={'请输入接口地址.'} onChange={(e) => {
+            <Input placeholder={'请输入接口地址'} onChange={(e) => {
                 stateRef.current.url = e.target.value
             }} />
             <Input.TextArea rows={6} style={{ marginTop: 10 }} placeholder={'请输入请求参数'} onChange={(e) => {
@@ -37,12 +37,18 @@ export default function ApiView() {
             }} />
             <div style={{ marginTop: 15 }}>
                 <Button style={{ width: 100 }} onClick={() => {
+                    if (!stateRef.current.url) {
+                        openNotification('bottomRight', '请输入接口地址')
+                    }
                     setResponseResult('')
                     RequestHttp.post(stateRef.current.url).then((res) => {
                         setResponseResult(JSON.stringify(res, null, 2))
                     })
                 }}>POST</Button>
                 <Button style={{ width: 100, marginLeft: 20 }} onClick={() => {
+                    if (!stateRef.current.url) {
+                        openNotification('bottomRight', '请输入接口地址')
+                    }
                     setResponseResult('')
                     RequestHttp.get(stateRef.current.url).then((res) => {
                         setResponseResult(JSON.stringify(res, null, 2))
@@ -76,6 +82,8 @@ export default function ApiView() {
                                     setResponseResult(JSON.stringify(err, null, 2))
                                     openNotification('bottomRight', '文件已存在')
                                 })
+                            } else {
+                                openNotification('bottomRight', '取消选择文件')
                             }
                         }
                     )

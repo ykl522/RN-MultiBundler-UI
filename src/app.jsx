@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-02 15:15:32
+ * @LastEditTime: 2022-11-03 15:34:55
  * @FilePath: \RN-MultiBundler-UI\src\app.jsx
  * @Description: 首页
  */
@@ -35,7 +35,7 @@ class App extends React.Component {
 			{ label: '多语言', key: 'item-2', children: <LanguageView projDir={workSpace} /> },
 			{ label: '二维码', key: 'item-3', children: <QRCodeView /> },
 			{ label: '接口', key: 'item-4', children: <ApiView /> },
-			{ label: 'yapi接口Json转ts', key: 'item-5', children: <YapiJson2Ts /> },
+			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
 		];
 		return (
 			<Tabs
