@@ -25,7 +25,7 @@ const COLOR = {
  * 
  * @param {YAPIData} data 
  */
-function parseFac(data, floor = 1) {
+function parseFac(data, floor = 1, isArrayChild = false) {
     try {
         const map = {
             "number": parseNumber,
@@ -39,7 +39,7 @@ function parseFac(data, floor = 1) {
         if (typeof fn !== 'function') {
             return alert(`类型:[${data.type}] 不正确`)
         }
-        return fn(data, floor)
+        return fn(data, floor, isArrayChild)
     } catch (error) {
         alert(error)
     }
@@ -70,48 +70,57 @@ function genMark(mark, floor = 1) {
         + genSpace(floor * 4 + 1) + `<span style="color:${COLOR.REMARK}">*/</span>` + BREAK_LINE//备注结束
 }
 
-function genTypeDom(type: string) {
-    return `<span style="color:${COLOR.TYPEDESC};font-weight:700">${type}</span><br>`
+function genTypeDom(type, isArrayChild = false) {
+    return `<span style="color:${COLOR.TYPEDESC};font-weight:700">${type}</span>${isArrayChild ? '' : '<br>'}`
 }
 
 /**
  * 解析数字
  * @param {NumberProperty} data 
+ * @param {number} [floor] 
+ * @param {boolean} [isArrayChild] 
  * @returns 
  */
-function parseNumber(data, floor = 1) {
-    return genTypeDom('number')
+function parseNumber(data, floor = 1, isArrayChild = false) {
+    return genTypeDom('number', isArrayChild)
 }
 
 
 /**
  * 解析字符串
  * @param {StringProperty} data 
+ * @param {number} [floor] 
+ * @param {boolean} [isArrayChild] 
  * @returns 
  */
-function parseString(data, floor = 1) {
-    return genTypeDom('string')
+function parseString(data, floor = 1, isArrayChild = false) {
+    return genTypeDom('string', isArrayChild)
 }
 
 /**
  * 解析布尔
  * @param {BooleanProperty} data 
+ * @param {number} [floor] 
+ * @param {boolean} [isArrayChild] 
  * @returns 
  */
-function parseBoolean(data, floor = 1) {
-    return genTypeDom('boolean')
+function parseBoolean(data, floor = 1, isArrayChild = false) {
+    return genTypeDom('boolean', isArrayChild)
 }
 /**
  * 解析数组
  * @param {ArrayProperty} data 
+ * @param {number} [floor] 
+ * @param {boolean} [isArrayChild] 
  * @returns 
  */
-function parseArray(data, floor = 1) {
-    return parseFac(data.items, floor + 1) + '[]' + BREAK_LINE
+function parseArray(data, floor = 1, isArrayChild = false) {
+    return parseFac(data.items, floor + 1, true) + '[]' + BREAK_LINE
 }
 /**
  * 解析Object
  * @param {ObjectProperty} data 
+ * @param {number} [floor] 
  */
 function parseObject(data, floor = 1) {
     let properties = data.properties;
