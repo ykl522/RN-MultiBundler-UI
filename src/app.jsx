@@ -17,6 +17,7 @@ import { workSpace } from './config'
 import LanguageView from './page/LanguageView';
 import PackageView from './page/PackageView';
 import QRCodeView from './page/QRCodeView';
+import YapiJson2Ts from './page/YapiJson2Ts';
 // let curBinDirName = workSpace || __dirname;
 
 // var getStackTrace = function () {
@@ -771,7 +772,6 @@ class App extends React.Component {
 	// 	}
 	// 	return btnText;
 	// }
-
 	render() {
 		const items = [
 			// { label: '打包', key: 'item-1', children: this.packageView() }, // 务必填写 key
@@ -779,6 +779,7 @@ class App extends React.Component {
 			// { label: '多语言', key: 'item-2', children: this.languageView() },
 			{ label: '多语言', key: 'item-2', children: <LanguageView projDir={workSpace} /> },
 			{ label: '二维码', key: 'item-3', children: <QRCodeView /> },
+			{ label: 'yapi转ts类型', key: 'item-4', children: <YapiJson2Ts /> },
 		];
 		return (
 			<Tabs tabBarStyle={{ paddingLeft: 30, }} items={items} />
