@@ -15,6 +15,7 @@ import LanguageView from './page/LanguageView';
 import PackageView from './page/PackageView';
 import QRCodeView from './page/QRCodeView';
 import ApiView from './page/ApiView';
+import YapiJson2Ts from './page/YapiJson2Ts'
 class App extends React.Component {
 
 	constructor(props) {
@@ -34,6 +35,7 @@ class App extends React.Component {
 			{ label: '多语言', key: 'item-2', children: <LanguageView projDir={workSpace} /> },
 			{ label: '二维码', key: 'item-3', children: <QRCodeView /> },
 			{ label: '接口', key: 'item-4', children: <ApiView /> },
+			{ label: 'yapi接口Json转ts', key: 'item-5', children: <YapiJson2Ts /> },
 		];
 		return (
 			<Tabs
