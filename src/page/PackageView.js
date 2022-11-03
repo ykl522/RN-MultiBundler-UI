@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-10-28 17:56:53
+ * @LastEditTime: 2022-11-03 09:50:35
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -937,7 +937,7 @@ export default function PackageView(props) {
             <div style={{ marginTop: '12px' }}>模块依赖:</div>
             {renderItem(null, renderDep())}
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                <Button style={{ marginLeft: 10, marginRight: 10, width: 100, color: '#555' }} loading={loading} onClick={startPackage}>打包</Button>
+                <Button style={{ marginLeft: 10, marginRight: 10, width: 100, color: '#555' }} loading={loading} onClick={startPackage}>打RN包</Button>
                 <div style={{ color: entryErrorIndex ? 'red' : 'green' }}>{'打包总共' + entrys.length + '个：成功' + (entryIndex - entryErrorIndex) + '个，失败' + entryErrorIndex + '个' + (entryErrorIndex ? '，失败index-->' + JSON.stringify(entryErrorIndexs) : '')}</div>
             </div>
             <div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>

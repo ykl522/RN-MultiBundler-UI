@@ -4,3 +4,4 @@ out
 *.log
 *.lock
 package-lock.json
+src/config.jsx
