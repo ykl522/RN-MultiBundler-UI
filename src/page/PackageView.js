@@ -2,8 +2,8 @@
  * 打包 界面   
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
- * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-03 09:50:35
+ * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditTime: 2022-11-11 15:18:15
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -72,6 +72,7 @@ export default function PackageView(props) {
         />
     );
     const entryIndexRef = useRef(0)
+    const logTextRef = useRef()
     const stateRef = useRef({ type: 'base' })
     const [entryIndex, setEntryIndex] = useState(0)
     const [platform, setPlatform] = useState('android') //平台 android iOS
@@ -103,6 +104,11 @@ export default function PackageView(props) {
     };
 
     useEffect(() => {
+
+        window.api && window.api.changeDir((event, value) => {
+            // event.sender.send('counter-value', newValue)
+            console.log(value)
+        })
         // let openType = 'openDirectory';
         // let filter = undefined;
         // let title = '清选择RN工程目录';
@@ -411,6 +417,7 @@ export default function PackageView(props) {
                 message.error('打安装包出错！')
                 console.error(`执行出错: ${iconv.decode(error.message, 'cp936')}`);
                 setCmdStr(error)
+                if (logTextRef.current) logTextRef.current.resizableTextArea.textArea.scrollTop = logTextRef.current.resizableTextArea.textArea.scrollHeight
                 // return;
             } else {
                 setPackageStaus(2)
@@ -424,6 +431,8 @@ export default function PackageView(props) {
             console.log(`stdout: ${data}`);
             cmdRetStrs += data;
             setCmdStr(cmdRetStrs)
+            if (logTextRef.current) logTextRef.current.resizableTextArea.textArea.scrollTop = logTextRef.current.resizableTextArea.textArea.scrollHeight
+            // console.log(logTextRef.current.resizableTextArea.textArea.scrollHeight)
         });
     }
 
@@ -508,6 +517,7 @@ export default function PackageView(props) {
                 entryErrors.push(entry.substring(entry.lastIndexOf('index'), entry.indexOf('.js')))
                 setEntryErrorIndexs(entryErrors)
                 setCmdStr(error)
+                if (logTextRef.current) logTextRef.current.resizableTextArea.textArea.scrollTop = logTextRef.current.resizableTextArea.textArea.scrollHeight
                 // return;
             }
             console.log(`stdout: ${stdout}`);
@@ -520,6 +530,7 @@ export default function PackageView(props) {
             console.log(`stdout: ${data}`);
             cmdRetStrs += data;
             setCmdStr(cmdRetStrs)
+            if (logTextRef.current) logTextRef.current.resizableTextArea.textArea.scrollTop = logTextRef.current.resizableTextArea.textArea.scrollHeight
         });
 
     }
@@ -831,7 +842,7 @@ export default function PackageView(props) {
                 dataSource={obj}
                 rowKey={'resKey'}
                 expandable={{
-                    expandedRowRender: (data) => <Table bordered size={'small'} pagination={false} columns={subColumns} dataSource={data.childData} />,
+                    expandedRowRender: (data) => <Table bordered size={'small'} rowKey={'resKey'} pagination={false} columns={subColumns} dataSource={data.childData} />,
                     rowExpandable: (data) => data.childData != null,
                     expandRowByClick: true
                 }}
@@ -964,7 +975,7 @@ export default function PackageView(props) {
                 }}>上传</Button>
             </div>
             <div>{cmd}</div>
-            <TextArea value={cmdStr} rows={10} readonly={true} style={{ marginTop: 12, width: 1200 }} />
+            <TextArea ref={logTextRef} value={cmdStr} rows={10} readonly={true} style={{ marginTop: 12, width: 1200 }} />
             <Modal
                 title="新增模块"
                 visible={visible}
