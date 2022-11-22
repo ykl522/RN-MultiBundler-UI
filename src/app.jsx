@@ -1,21 +1,21 @@
 /*
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
- * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-03 15:34:55
+ * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditTime: 2022-11-15 09:38:58
  * @FilePath: \RN-MultiBundler-UI\src\app.jsx
  * @Description: 首页
  */
 const React = require('react');
 
 const { Tabs } = require('antd');
-var _ = require('lodash');
 import { workSpace } from './config'
 import LanguageView from './page/LanguageView';
 import PackageView from './page/PackageView';
 import QRCodeView from './page/QRCodeView';
 import ApiView from './page/ApiView';
 import YapiJson2Ts from './page/YapiJson2Ts'
+import Md5View from './page/Md5View'
 class App extends React.Component {
 
 	constructor(props) {
@@ -36,6 +36,7 @@ class App extends React.Component {
 			{ label: '二维码', key: 'item-3', children: <QRCodeView /> },
 			{ label: '接口', key: 'item-4', children: <ApiView /> },
 			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
+			{ label: 'MD5', key: 'item-6', children: <Md5View /> },
 		];
 		return (
 			<Tabs

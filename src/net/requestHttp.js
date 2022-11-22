@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 15:24:25
  * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-03 16:09:51
+ * @LastEditTime: 2022-11-08 15:26:55
  * @FilePath: \RN-MultiBundler-UI\src\net\requestHttp.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -103,7 +103,8 @@ export const post = async (url, body = {}, config = {}) => {
                     headers: {
                         "Content-Type": "application/json;charset=utf-8",
                         "Access_token": "Basic MGM0ZWU3YWZiNTkyZWM3NThiMTU0ZDY3NDE3NTVmODEmQWRtaW4=",
-                        "userToken": "token"
+                        "userToken": "token",
+                        "Authorization": "bxqhN0HZB4b5HbYk"
                     },
                     // ...config
                 }
@@ -130,8 +131,9 @@ export const get = async (url, config = {}) => {
             instance.get(httpUrl.pathname,
                 {
                     headers: {
-                        "Content-Type": "application/json;charset=utf-8",
-                        "Access_token": "Basic MGM0ZWU3YWZiNTkyZWM3NThiMTU0ZDY3NDE3NTVmODEmQWRtaW4="
+                        "Content-Type": "application/json",
+                        "Access_token": "Basic MGM0ZWU3YWZiNTkyZWM3NThiMTU0ZDY3NDE3NTVmODEmQWRtaW4=",
+                        "Authorization": "Nebula token:375152220c324ede9a88741f2bc18e4e"
                     },
                     // ...config
                 }

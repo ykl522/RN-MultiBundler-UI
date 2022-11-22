@@ -143,6 +143,10 @@ export default function LanguageView(props) {
                         openNotification('bottomRight', '没有要复制的内容')
                     }
                 }}>复制</Button>
+                <Button style={{ width: 120, marginLeft: 10 }} onClick={async () => {
+                    const { shell } = require('electron')
+                    await shell.openExternal('https://ztn.feishu.cn/sheets/shtcn5JOofNJl69VOKMMKXhpTQb')
+                }}>跳转在线文档</Button>
             </div>
         </div>
     )
