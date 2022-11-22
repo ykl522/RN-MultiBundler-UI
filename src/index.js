@@ -2,14 +2,16 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-10-28 09:33:09
+ * @LastEditTime: 2022-11-10 11:30:13
  * @FilePath: \RN-MultiBundler-UI\src\index.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const { REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
 const installExtension = require('electron-devtools-installer').default;
 const { enableLiveReload } = require('electron-compile');
+import { workSpace } from './config'
+import path from 'path'
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -27,8 +29,89 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     width: 1500,
     height: 1000,
-    webPreferences: { nodeIntegration: true, preload: __dirname + '/preload.js' }
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      sandbox: false,
+      preload: path.resolve(__dirname, 'preload.js')
+    }
   });
+  // 菜单栏模板
+  const menuBar = [
+    {
+      label: '文件',
+      submenu: [
+        {
+          label: '打开', click: async (event, focusedWindow, focusedWebContents) => {
+            const { dialog } = require('electron');
+            let openType = 'openDirectory';
+            let filter = undefined;
+            let title = '清选择RN工程目录';
+            await dialog.showOpenDialog(
+              focusedWindow,
+              {
+                defaultPath: workSpace,
+                title: title,
+                buttonLabel: '选择',
+                filters: filter,
+                properties: [openType]
+              },
+              (filePath) => {
+                if (filePath) {
+                  const directory = filePath[0];
+                  mainWindow.webContents.send('changeDir', directory)
+                  console.log('选择: ' + directory)
+                }
+              }
+            )
+          }
+        },
+        { label: '退出', role: 'quit' }
+      ]
+    },
+    {
+      label: '预定义功能',
+      submenu: [
+        {
+          label: '打开开发者工具',
+          role: 'toggledevtools'
+        },
+        {
+          label: '全屏',
+          role: 'togglefullscreen'
+        },
+        {
+          label: '重新加载',
+          role: 'reload'
+        },
+        {
+          label: '编辑',
+          role: 'editMenu'
+        },
+        {
+          label: '窗口',
+          role: 'windowMenu'
+        }
+      ]
+    },
+    {
+      label: '帮助',
+      submenu: [
+        {
+          label: '访问官网', click: async () => {
+            const { shell } = require('electron')
+            await shell.openExternal('https://www.electronjs.org/docs/latest/api/app')
+          }
+        },
+        { label: '关于' }
+      ]
+    }
+  ];
+
+  // 构建菜单项
+  const menu = Menu.buildFromTemplate(menuBar);
+  // 设置一个顶部菜单栏
+  Menu.setApplicationMenu(menu);
   // and load the index.html of the app.
   var url = 'file://' + __dirname + '/index.html';
   mainWindow.loadURL(url);
@@ -36,7 +119,7 @@ const createWindow = async () => {
   if (isDevMode) {
     await installExtension(REACT_DEVELOPER_TOOLS);
     mainWindow.webContents.openDevTools();
-    require('devtron').install()
+    // require('devtron').install()
   }
 
   // Emitted when the window is closed.

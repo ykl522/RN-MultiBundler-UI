@@ -25,6 +25,6 @@
     "metro.config.js",
   ],
   "include": [
-    "app/**/*"
+    "src/**/*"
   ]
 }
