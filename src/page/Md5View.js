@@ -2,7 +2,7 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2022-11-15 09:38:26
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-21 15:17:15
+ * @LastEditTime: 2022-11-22 14:50:39
  * @FilePath: \RN-MultiBundler-UI\src\page\Md5View.js
  * @Description: md5
  */
@@ -76,7 +76,13 @@ export default function Md5View() {
             title: 'MD5',
             dataIndex: 'md5',
             key: 'md5',
-        },]
+            render: (data) => <a style={{ width: 300 }}>{data}</a>
+        }, {
+            title: '最后修改时间',
+            dataIndex: 'lastModified',
+            key: 'lastModified',
+            render: (data) => <div style={{ width: 155 }}>{new Date(data).toLocaleString()}</div>
+        }]
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: 30, paddingRight: 30 }}>
