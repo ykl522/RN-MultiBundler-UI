@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-11 15:18:15
+ * @LastEditTime: 2022-12-19 15:08:12
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -47,6 +47,7 @@ export default function PackageView(props) {
         { label: 'FWS', key: '1', cmd: 'assembleFWSRelease', dir: '\\android\\app\\build\\outputs\\apk\\FWS\\release' },
         { label: 'YT-DEBUG', key: '2', cmd: 'assembleYTDebug', dir: '\\android\\app\\build\\outputs\\apk\\YT\\debug' },
         { label: 'FWS-DEBUG', key: '3', cmd: 'assembleFWSDebug', dir: '\\android\\app\\build\\outputs\\apk\\FWS\\debug' },
+        { label: 'Clean', key: '4', cmd: 'clean build', dir: '\\android\\app' }
     ]
 
     const menu = (
@@ -66,6 +67,7 @@ export default function PackageView(props) {
             onClick={(e) => {
                 if (channelItems[e.key].label) {
                     setSelectedChannel(channelItems[e.key])
+                    setPackageStaus(0)
                 }
             }}
             items={channelItems}
@@ -408,7 +410,7 @@ export default function PackageView(props) {
         // let cmdStr = './android/gradlew assembleRelease'
         let assembleRelease = selectedChannel.cmd
         let cmdStr = 'chcp 65001 && ' + projDir + '\\android\\gradlew ' + assembleRelease
-        const iconv = require('iconv-lite')
+
         setPackageStaus(1)
         let packageProcess = exec(cmdStr, { cwd: projDir + '\\android', encoding: 'buffer' }, (error, stdout, stderr) => {
             setLoading(false)
@@ -921,7 +923,7 @@ export default function PackageView(props) {
                         // alert(JSON.stringify(files, null, 2))
                         fs.readdir(curBinDirName + '\\android\\app\\src\\main\\res\\drawable-mdpi', 'utf8', (e, resFiles) => {
                             let zipRes = []
-                            files.forEach((file) => {
+                            files && files.forEach((file) => {
                                 if (resFiles.includes(file)) {
                                     fs.unlinkSync(curBinDirName + '\\remotebundles\\drawable-mdpi\\' + file)
                                 } else {

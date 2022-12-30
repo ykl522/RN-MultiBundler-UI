@@ -1,8 +1,8 @@
 /*
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-27 09:55:52
- * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-09 09:39:58
+ * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditTime: 2022-12-21 10:22:37
  * @FilePath: \RN-MultiBundler-UI\src\page\ApiView.js
  * @Description: Api调试
  */
@@ -75,6 +75,9 @@ export default function ApiView() {
                                     setProgress((progress * 100).toFixed(0) + '%')
                                     if (progress == 1) {
                                         openNotification('bottomRight', '上传完成')
+                                        // let to = setTimeout(() => {
+                                        //     clearTimeout(to)
+                                        // }, 0)
                                     }
                                 }).then((res) => {
                                     setResponseResult(JSON.stringify(res, null, 2))
