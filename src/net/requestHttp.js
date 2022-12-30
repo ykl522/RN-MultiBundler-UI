@@ -1,8 +1,8 @@
 /*
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 15:24:25
- * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-08 15:26:55
+ * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditTime: 2022-12-14 09:43:38
  * @FilePath: \RN-MultiBundler-UI\src\net\requestHttp.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,7 +10,7 @@ import axios from 'axios';
 
 const instance = axios.create({
     baseURL: "https://filestorage.yunexpress.com",
-    timeout: 20000
+    timeout: 60000
 });
 
 const defaultHeaders = {
