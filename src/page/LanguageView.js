@@ -75,8 +75,8 @@ export default function LanguageView(props) {
             if (objItem && objItem.indexOf('\t') != -1) {
                 let kvs = objItem.split('\t')
                 let value = ''
-                if (kvs.length > 2 && kvs[kvs.length][0]) {
-                    value = `${kvs[kvs.length].replace(kvs[kvs.length][0], kvs[kvs.length][0].toLocaleUpperCase())}`
+                if (kvs.length > 2 && kvs[kvs.length - 1][0]) {
+                    value = `${kvs[kvs.length - 1].replace(kvs[kvs.length - 1][0], kvs[kvs.length - 1][0].toLocaleUpperCase())}`
                 } else if (kvs[1][0]) {
                     value = `${kvs[1].replace(kvs[1][0], kvs[1][0].toLocaleUpperCase())}`
                 }
@@ -176,11 +176,15 @@ export default function LanguageView(props) {
                         for (let objItem of objArray) {
                             if (objItem) {
                                 let kvs = objItem.split('\t')
-                                if (kvs.length > 2 && kvs[2][0]) {
+                                if (kvs.length == 3 && kvs[2][0]) {
                                     obj[kvs[0]] = { zh: kvs[1], en: kvs[2] }
                                     objStr = objStr + `\t${kvs[0]}: {\n\t\tzh: "${kvs[1]}",\n\t\ten: "${kvs[2].replace(kvs[2][0], kvs[2][0].toLocaleUpperCase())}"\n\t},\n`
-                                } else if (kvs[1][0]) {
+                                } else if (kvs.length < 3 && kvs[1][0]) {
                                     obj[kvs[0]] = { en: kvs[1].replace(kvs[1][0], kvs[1][0].toLocaleUpperCase()) }
+                                } else if (kvs.length > 3) {
+                                    obj[kvs[0]] = {
+                                        zh: kvs[1], en: kvs[2].replace(kvs[2][0], kvs[2][0].toLocaleUpperCase()), fr: kvs[3].replace(kvs[3][0], kvs[3][0].toLocaleUpperCase())
+                                    }
                                 }
                             }
                         }
