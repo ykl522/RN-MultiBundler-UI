@@ -116,6 +116,22 @@ export default function LanguageView(props) {
         return otherObj
     }
 
+    const findObj = (oldObj, newObj) => {
+        let obj = {}
+        if (oldObj && newObj) {
+            for (let key of Object.keys(newObj)) {
+                if (!oldObj[key]) {
+                    obj[key] = newObj[key]
+                } else {
+                    if ((typeof newObj[key] == 'object') && (typeof oldObj[key] == 'object')) {
+                        obj[key] = obj(oldObj[key], newObj[key])
+                    }
+                }
+            }
+        }
+        return obj
+    }
+
     return (
         <div style={{ paddingLeft: 30, paddingRight: 30, paddingTop: 18, display: 'flex', flexDirection: 'column' }}>
             {contextHolder}
@@ -200,6 +216,21 @@ export default function LanguageView(props) {
                         openNotification('bottomRight', '请输入要转换的表格')
                     }
                 }}>Excel转换单文件Obj</Button>
+                <Button style={{ width: 100, marginLeft: 10 }} onClick={() => {
+                    if (outputTextArea && inputTextArea) {
+                        let oldObj = eval(`(${outputTextArea})`)
+                        let newObj = {}
+                        if (inputTextArea.startsWith('{')) {
+                            newObj = eval(`(${inputTextArea})`)
+                        } else {
+                            newObj = excel2Obj(obj2Excel(inputTextArea))
+                        }
+                        let obj = findObj(oldObj, newObj)
+                        setOutputTextArea(JSON.stringify(obj, null, 2))
+                    } else {
+                        openNotification('bottomRight', '请先转换要同步的中文词条JSON对象为JSON,并且输入其它语言词条JSON对象')
+                    }
+                }}>查找多出Key</Button>
             </div>
             <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'row' }}>
                 <Button style={{ width: 100 }} onClick={() => {
@@ -209,7 +240,7 @@ export default function LanguageView(props) {
                         otherObj = asyncObj(zhObj, otherObj)
                         console.log(JSON.stringify(otherObj, null, 2))
                     } else {
-                        openNotification('bottomRight', '请输入要同步的中文词条JSON对象和其它语言词条JSON对象')
+                        openNotification('bottomRight', '请先转换要同步的中文词条JSON对象为JSON,并且输入其它语言词条JSON对象')
                     }
                 }}>同步Key</Button>
                 <Button style={{ width: 155, marginLeft: 10 }} onClick={() => {
@@ -268,7 +299,7 @@ export default function LanguageView(props) {
                         openNotification('bottomRight', '请输入要已合成的词条和要加入合成的词条')
                     }
                 }}>多种词条合成Excel</Button>
-                <Button style={{ width: 70, marginLeft: 10 }} onClick={() => {
+                <Button style={{ width: 100, marginLeft: 10 }} onClick={() => {
                     if (outputTextArea) {
                         let copyPath = props.projDir + '\\copy.txt'
                         fs.writeFileSync(copyPath, outputTextArea, 'utf8')
@@ -291,10 +322,10 @@ export default function LanguageView(props) {
                     } else {
                         openNotification('bottomRight', '没有要复制的内容')
                     }
-                }}>复制</Button>
+                }}>复制结果</Button>
                 <Button style={{ width: 120, marginLeft: 10 }} onClick={async () => {
                     const { shell } = require('electron')
-                    await shell.openExternal('https://ztn.feishu.cn/sheets/shtcn5JOofNJl69VOKMMKXhpTQb')
+                    await shell.openExternal('https://ztn.feishu.cn/wiki/wikcnlbOqQs7Vz21ezzODatbIGd?sheet=5cf23f')
                 }}>跳转在线文档</Button>
                 <Button style={{ width: 100, marginLeft: 10 }} onClick={async () => {
                     setOutputTextArea('')

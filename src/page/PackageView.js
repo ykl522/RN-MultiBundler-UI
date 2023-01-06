@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-12-19 15:08:12
+ * @LastEditTime: 2023-01-04 10:13:47
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -414,6 +414,7 @@ export default function PackageView(props) {
         setPackageStaus(1)
         let packageProcess = exec(cmdStr, { cwd: projDir + '\\android', encoding: 'buffer' }, (error, stdout, stderr) => {
             setLoading(false)
+            const iconv = require('iconv-lite')
             if (error) {
                 setPackageStaus(-1)
                 message.error('打安装包出错！')
