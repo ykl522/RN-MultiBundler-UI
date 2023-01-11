@@ -1,8 +1,8 @@
 {
   "name": "rn_multibundler_ui",
-  "productName": "云途APP打包工具",
+  "productName": "云途APP开发工具",
   "version": "1.0.0",
-  "description": "可视化RN拆包",
+  "description": "主要功能：可视化RN拆包，可一键打包",
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
