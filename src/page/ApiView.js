@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-27 09:55:52
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-12-21 10:22:37
+ * @LastEditTime: 2023-01-12 16:05:08
  * @FilePath: \RN-MultiBundler-UI\src\page\ApiView.js
  * @Description: Api调试
  */
@@ -41,7 +41,7 @@ export default function ApiView() {
                         openNotification('bottomRight', '请输入接口地址')
                     }
                     setResponseResult('')
-                    RequestHttp.post(stateRef.current.url, JSON.parse(stateRef.current.params)).then((res) => {
+                    RequestHttp.post(stateRef.current.url, stateRef.current.params ? JSON.parse(stateRef.current.params) : null).then((res) => {
                         setResponseResult(JSON.stringify(res, null, 2))
                     })
                 }}>POST</Button>
