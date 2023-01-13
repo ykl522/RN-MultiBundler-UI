@@ -135,7 +135,7 @@ export default function LanguageView(props) {
     return (
         <div style={{ paddingLeft: 30, paddingRight: 30, paddingTop: 18, display: 'flex', flexDirection: 'column' }}>
             {contextHolder}
-            <Input.TextArea onChange={(e) => {
+            <Input.TextArea placeholder={'请输入要转换的内容'} onChange={(e) => {
                 setInputTextArea(e.target.value)
             }} rows={10} value={inputTextArea} />
             <div style={{ marginTop: 10, marginBottom: 10, display: 'flex', flexDirection: 'row' }}>

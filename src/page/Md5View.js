@@ -2,7 +2,7 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2022-11-15 09:38:26
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-22 14:50:39
+ * @LastEditTime: 2023-01-13 14:59:18
  * @FilePath: \RN-MultiBundler-UI\src\page\Md5View.js
  * @Description: md5
  */
@@ -26,12 +26,12 @@ export default function Md5View() {
         showUploadList: fileList.length > 0,
         onChange: (info) => {
             const { status, originFileObj } = info.file;
-            console.log(status + "===>", info.fileList)
+            console.log(status + "===>", info)
             if (status === 'done') {
                 for (let file of info.fileList) {
-                    file.md5 = md5(originFileObj.path)
+                    file.md5 = md5(file.originFileObj.path)
                     file.url = ''
-                    file.path = originFileObj.path
+                    file.path = file.originFileObj.path
                 }
                 fileListRef.current = [...info.fileList]
                 setFileList(fileListRef.current)
@@ -71,12 +71,19 @@ export default function Md5View() {
             title: '文件路径',
             dataIndex: 'path',
             key: 'path',
+            render: (data) => <div style={{ width: 380 }}>{data}</div>
+        },
+        {
+            title: '文件大小',
+            dataIndex: 'size',
+            key: 'size',
+            render: (data) => <div style={{ width: 55 }}>{`${(data / 1024 / 1024).toFixed(2)}M`}</div>
         },
         {
             title: 'MD5',
             dataIndex: 'md5',
             key: 'md5',
-            render: (data) => <a style={{ width: 300 }}>{data}</a>
+            render: (data) => <a style={{ width: 315 }}>{data}</a>
         }, {
             title: '最后修改时间',
             dataIndex: 'lastModified',
