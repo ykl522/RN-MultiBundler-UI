@@ -124,7 +124,10 @@ export default function LanguageView(props) {
                     obj[key] = newObj[key]
                 } else {
                     if ((typeof newObj[key] == 'object') && (typeof oldObj[key] == 'object')) {
-                        obj[key] = obj(oldObj[key], newObj[key])
+                        let findObjObj = findObj(oldObj[key], newObj[key])
+                        if (Object.keys(findObjObj).length !== 0) {
+                            obj[key] = findObj(oldObj[key], newObj[key])
+                        }
                     }
                 }
             }
@@ -216,9 +219,14 @@ export default function LanguageView(props) {
                         openNotification('bottomRight', '请输入要转换的表格')
                     }
                 }}>Excel转换单文件Obj</Button>
-                <Button style={{ width: 100, marginLeft: 10 }} onClick={() => {
+                <Button style={{ width: 120, marginLeft: 10 }} onClick={() => {
                     if (outputTextArea && inputTextArea) {
-                        let oldObj = eval(`(${outputTextArea})`)
+                        let oldObj = {}
+                        if (isExcel(outputTextArea)) {
+                            oldObj = excel2Obj(outputTextArea)
+                        } else {
+                            oldObj = eval(`(${outputTextArea})`)
+                        }
                         let newObj = {}
                         if (inputTextArea.startsWith('{')) {
                             newObj = eval(`(${inputTextArea})`)
