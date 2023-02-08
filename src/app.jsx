@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-01-10 16:36:16
+ * @LastEditTime: 2023-01-30 17:38:59
  * @FilePath: \RN-MultiBundler-UI\src\app.jsx
  * @Description: 首页
  */
@@ -17,6 +17,7 @@ import ApiView from './page/ApiView';
 import YapiJson2Ts from './page/YapiJson2Ts'
 import Md5View from './page/Md5View'
 import ApkView from './page/ApkView';
+import ProjectView from './page/ProjectView';
 class App extends React.Component {
 
 	constructor(props) {
@@ -39,6 +40,7 @@ class App extends React.Component {
 			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
 			{ label: 'MD5', key: 'item-6', children: <Md5View /> },
 			{ label: 'APK', key: 'item-7', children: <ApkView /> },
+			{ label: '项目管理', key: 'item-8', children: <ProjectView /> },
 		];
 		return (
 			<Tabs
