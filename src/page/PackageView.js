@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-01-13 14:32:38
+ * @LastEditTime: 2023-02-08 17:15:55
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -22,6 +22,7 @@ const packageLockFileName = 'package-lock.json';
 // const packageLockFileName = 'yarn.lock';
 const packageFileName = 'package.json';
 import { workSpace } from '../config'
+import WinExec from '../utils/WinExec';
 const curBinDirName = workSpace || __dirname;
 let versionInput = null
 let bundleNameInput = null
@@ -882,7 +883,7 @@ export default function PackageView(props) {
             {renderItem('assets目录', renderFileSelect('assets'))}
 
             <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <Button style={{ marginTop: 12, marginLeft: 10, width: 100, color: '#555' }} onClick={() => {
+                <Button style={{ marginTop: 12, width: 80, color: '#555' }} onClick={() => {
                     let newDep = []
                     for (let dep of deps) {
                         if (typeof dep == 'string') {
@@ -911,13 +912,13 @@ export default function PackageView(props) {
                         }
                     }
                 }}>全选</Button>
-                <Button style={{ marginTop: 12, marginLeft: 10, width: 100, color: '#555' }} onClick={() => {
+                <Button style={{ marginTop: 12, marginLeft: 15, width: 100, color: '#555' }} onClick={() => {
                     alert(JSON.stringify(depsChecked, null, 2))
                 }}>查看选择</Button>
-                <Button style={{ marginTop: 12, marginLeft: 10, width: 120, color: '#555' }} onClick={() => {
+                <Button style={{ marginTop: 12, marginLeft: 15, width: 120, color: '#555' }} onClick={() => {
                     remote.shell.openItem(bundleDir)
                 }}>跳转打包目录</Button>
-                {stateRef.current.type == 'buz' ? <Button style={{ marginTop: 12, marginLeft: 10, width: 130, color: '#555' }} onClick={() => {
+                {stateRef.current.type == 'buz' ? <Button style={{ marginTop: 12, marginLeft: 15, width: 130, color: '#555' }} onClick={() => {
                     // remote.shell.openItem(curBinDirName + '\\remotebundles')
                     const packageDir = curBinDirName + '\\remotebundles\\'
                     fs.readdir(curBinDirName + '\\remotebundles\\drawable-mdpi', 'utf8', (e, files) => {
@@ -937,25 +938,25 @@ export default function PackageView(props) {
                         })
                     })
                 }}>生成插件更新包</Button> :
-                    <Button style={{ marginTop: 12, marginLeft: 10, width: 120, color: '#555' }} onClick={() => {
+                    <Button style={{ marginTop: 12, marginLeft: 15, width: 120, color: '#555' }} onClick={() => {
                         cleanConfig()
                     }}>清空原来配置</Button>
                 }
-                <Button style={{ marginTop: 12, marginLeft: 10, width: 120, color: '#555' }} onClick={() => {
+                <Button style={{ marginTop: 12, marginLeft: 15, width: 120, color: '#555' }} onClick={() => {
                     showDrawer()
                 }}>查看模块详情</Button>
-                <Button style={{ marginTop: 12, marginLeft: 10, width: 100, color: '#555' }} onClick={() => {
+                <Button style={{ marginTop: 12, marginLeft: 15, width: 100, color: '#555' }} onClick={() => {
                     setVisible(true)
                 }}>新增模块</Button>
             </div>
             <div style={{ marginTop: '12px' }}>模块依赖:</div>
             {renderItem(null, renderDep())}
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                <Button style={{ marginLeft: 10, marginRight: 10, width: 120, color: '#555' }} loading={loading} onClick={startPackage}>打RN包</Button>
+                <Button style={{ marginRight: 10, width: 120, color: '#555' }} loading={loading} onClick={startPackage}>打RN包</Button>
                 <div style={{ color: entryErrorIndex ? 'red' : 'green' }}>{'打包总共' + entrys.length + '个：成功' + (entryIndex - entryErrorIndex) + '个，失败' + entryErrorIndex + '个' + (entryErrorIndex ? '，失败index-->' + JSON.stringify(entryErrorIndexs) : '')}</div>
             </div>
             <div style={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                <Button style={{ marginLeft: 10, marginRight: 10, marginTop: 10, width: 120, color: getPackageBtnText().color }} loading={loading} onClick={startAndroidPackage}>
+                <Button style={{ marginRight: 10, marginTop: 10, width: 120, color: getPackageBtnText().color }} loading={loading} onClick={startAndroidPackage}>
                     {getPackageBtnText().name}
                 </Button>
                 <div style={{ flexDirection: 'row', alignItems: 'center', marginTop: '10px' }}>
@@ -967,12 +968,52 @@ export default function PackageView(props) {
                         </Space>
                     </Dropdown>
                 </div>
-                <Button style={{ marginLeft: 10, marginRight: 10, marginTop: 10, width: 130, color: '#555' }} onClick={() => {
+                <Button style={{ marginLeft: 15, marginRight: 10, marginTop: 10, width: 130, color: '#555' }} onClick={() => {
                     if (!remote.shell.openItem(projDir + selectedChannel.dir)) {
                         message.info('目录文件不存在，请先打安装包！')
                     }
                 }}>跳转安装包目录</Button>
-                <Button style={{ marginLeft: 10, marginRight: 10, marginTop: 10, width: 100, color: '#555' }} onClick={() => {
+                <Button style={{ width: 160, marginLeft: 5, marginTop: 10 }} onClick={() => {
+                    const fs = require('fs');
+                    const path = require('path')
+                    let newDateFile = {}
+                    // let dir = curBinDirName + '\\android\\app\\build\\outputs\\apk\\YT\\release\\'
+                    let dir = curBinDirName + selectedChannel.dir
+                    fs.readdirSync(dir).forEach(fileName => {
+                        const fileDir = path.join(dir, fileName)
+                        let stats = fs.statSync(fileDir)
+                        if (stats.isFile() && fileDir.endsWith('.apk')) {
+                            console.log(JSON.stringify(stats.atimeMs) + '**' + fileName)
+                            if (!newDateFile.atimeMs) {
+                                newDateFile.atimeMs = stats.atimeMs
+                                newDateFile.path = fileDir
+                            } else if (newDateFile.atimeMs < stats.atimeMs) {
+                                newDateFile.atimeMs = stats.atimeMs
+                                newDateFile.path = fileDir
+                                console.log(JSON.stringify(stats.atimeMs) + '--' + fileName)
+                            }
+                        }
+                    })
+                    console.log(JSON.stringify(newDateFile.path) + '------------' + newDateFile.atimeMs)
+                    const os = require('os')
+                    const ifaces = os.networkInterfaces()
+                    let ip = ''
+                    for (let con in ifaces) {
+                        if (con == '本地链接' || con == '以太网') {
+                            for (let j = 0; j < ifaces[con].length; j++) {
+                                if (ifaces[con][j].family == 'IPv4') {
+                                    ip = ifaces[con][j].address
+                                }
+                            }
+                        }
+                    }
+                    let copyPath = `http://${ip}:8081/${newDateFile.path.substring(newDateFile.path.indexOf('android\\')).replace(/\\/g, '/')}`
+                    let cmdStr = `CHCP 65001 && echo ${copyPath} | clip`
+                    console.log('copyPath=======>' + copyPath)
+                    WinExec.cmd(cmdStr)
+                    message.info('复制安装包本地链接成功')
+                }}>复制安装包本地链接</Button>
+                <Button style={{ marginLeft: 15, marginRight: 10, marginTop: 10, width: 100, color: '#555' }} onClick={() => {
                     // message.info('正在上传，请稍候...')
                     props.goUpload && props.goUpload()
                 }}>上传</Button>
