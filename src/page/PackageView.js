@@ -3,9 +3,9 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-02-08 17:15:55
+ * @LastEditTime: 2023-02-16 10:20:50
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: 打包工具
  */
 const { Button, Checkbox, Input, Radio, Modal, Dropdown, Space, Menu, message, Drawer, Table } = require('antd');
 const CheckboxGroup = Checkbox.Group;
@@ -41,6 +41,17 @@ export default function PackageView(props) {
         { label: 'rms', key: '4', },
         { label: 'cis', key: '5', },
         { label: 'dts', key: '6', },
+        { label: 'sims', key: '7', },
+        { label: 'config', key: '8', id: 9 },
+        { label: 'inboundSorting', key: '9', id: 10 },
+        { label: 'outbound', key: '10', id: 11 },
+        { label: 'warehouseQuery', key: '11', id: 12 },
+        { label: 'allocation', key: '12', id: 13 },
+        { label: 'delivery', key: '13', id: 14 },
+        { label: 'audit', key: '14', id: 15 },
+        { label: 'riskControl', key: '15', id: 16 },
+        { label: 'abnormal', key: '16', id: 17 },
+        { label: 'fba', key: '17', id: 18 },
     ]
 
     const channelItems = [
@@ -56,7 +67,7 @@ export default function PackageView(props) {
             selectable
             onClick={(e) => {
                 if (sysItems[e.key].label) {
-                    setSelectedSys(sysItems[e.key].label)
+                    setSelectedSys(sysItems[e.key])
                 }
             }}
             items={sysItems}
@@ -448,7 +459,7 @@ export default function PackageView(props) {
         console.log("*************** package  run  no ** " + (entryIndexRef.current + 1) + " pkg: " + entry);
         setCmdStr('')
         console.log("-----getModuleVersion----" + getModuleVersion(entry))
-        let bundleName = bundleNameInput.input.value ||
+        let bundleName = (bundleNameInput.input && bundleNameInput.input.value) ||
             (stateRef.current.type == 'buz' ?
                 (entry.substring(entry.lastIndexOf('index'), entry.indexOf('.js')) + `_V${versionInput.input.value || getModuleVersion(entry) || '0'}.android.bundle`)
                 : 'platform.android.bundle');
@@ -682,52 +693,65 @@ export default function PackageView(props) {
             message.info('请输入模块权限！')
             return
         }
-        if (selectedSys) {
+        if (selectedSys && selectedSys.label) {
+            let mUpperSelectedSys = selectedSys.label.replace(/([A-Z])/g, '_$1').toLocaleUpperCase()
             let jsonPath = projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json'
             let jsonStr = fs.readFileSync(jsonPath, 'utf8')
             let menuList = JSON.parse(jsonStr)
-            if (selectedSys == 'prs') {
-                selectedSys = 'Collection'
-            } else {
-                selectedSys = selectedSys.toLocaleUpperCase()
+            if (selectedSys.label == 'prs') {
+                mUpperSelectedSys = 'Collection'
             }
-            let newMoudle = { id: 0 }
+            let newMoudle = {
+                childName: modleName,
+                permission: modlePermission,
+                parent: mUpperSelectedSys,
+                resKey: 'model' + modlePermission.replace(/([A-Z])/g, '_$1').toLocaleLowerCase(),
+                id: selectedSys.id * 1000 + 1,
+                version: 0
+            }
+            console.log('mUpperSelectedSys--->' + mUpperSelectedSys)
             for (let menuInfo of menuList) {
-                if (menuInfo.permission == selectedSys) {
+                if (menuInfo.permission == mUpperSelectedSys) {
                     // alert(JSON.stringify(menuInfo.childData, null, 2))
                     for (let menuChild of menuInfo.childData) {
                         if (menuChild.id >= newMoudle.id) {
                             newMoudle = {
                                 childName: modleName,
                                 permission: modlePermission,
-                                parent: selectedSys,
-                                resKey: 'model_' + modlePermission.replace(/([A-Z])/g, '_$1').toLocaleLowerCase(),
+                                parent: mUpperSelectedSys,
+                                resKey: 'model' + modlePermission.replace(/([A-Z])/g, '_$1').toLocaleLowerCase(),
                                 id: menuChild.id + 1,
                                 version: 0
                             }
                         }
                     }
+                    console.log('newMoudle.id--->' + newMoudle.id)
                     menuInfo.childData.push(newMoudle)
                 }
             }
             fs.writeFileSync(jsonPath, JSON.stringify(menuList, null, 2), 'utf-8')
-            let mSelectedSys = selectedSys.toLocaleLowerCase()
-            if (mSelectedSys == 'cims') {
-                mSelectedSys = 'cims2'
+            let mSelectedSysItem = { key: selectedSys.key, label: selectedSys.label, id: selectedSys.id }
+            if (mSelectedSysItem.label == 'cims') {
+                mSelectedSysItem.label = 'cims2'
             }
-            setSelectedSys(mSelectedSys)
-            let clasePackageName = modlePermission.charAt(0).toLocaleLowerCase() + modlePermission.slice(1, modlePermission.indexOf('Page'))
-            let classPath = projDir + path.sep + 'app\\page\\' + mSelectedSys + '\\' + clasePackageName
+            setSelectedSys(mSelectedSysItem)
+            let clasePackageName = modlePermission.charAt(0).toLocaleLowerCase() + modlePermission.slice(1, modlePermission.includes('Page') ? modlePermission.indexOf('Page') : modlePermission.length)
+            let classPath = projDir + path.sep + 'app\\page\\' + mSelectedSysItem.label + '\\' + clasePackageName
             if (!fs.existsSync(classPath))
                 fs.mkdirSync(classPath)
-            fs.writeFileSync(classPath + '\\index.tsx', "import React from 'react'" + '\n'
+            // 入口创建    
+            fs.writeFileSync(classPath + '\\index.tsx', `//${modleName}\n`
+                + "import React from 'react'" + '\n'
                 + "import { NavigationContainer } from '@react-navigation/native';" + '\n'
                 + "import { createStackNavigator } from '@react-navigation/stack';" + '\n'
+                + "import { View } from 'react-native';" + '\n'
+                + "import { mapProps } from '../../../../baseApp';" + '\n'
                 + "const Stack = createStackNavigator();" + '\n'
                 + "const APP = (props: any) => {" + '\n'
                 + "\treturn (" + '\n'
                 + "\t\t<NavigationContainer>" + '\n'
                 + "\t\t\t<Stack.Navigator>" + '\n'
+                + `\t\t\t\t<Stack.Screen name="AllocationOut" options={{ headerShown: false }} component={mapProps(View, props)} />` + '\n'
                 + "\t\t\t</Stack.Navigator>" + '\n'
                 + "\t\t</NavigationContainer>" + '\n'
                 + "\t);" + '\n'
@@ -737,9 +761,10 @@ export default function PackageView(props) {
             //新增map配置
             addModuleConfig(newMoudle)
             let indexPath = projDir + path.sep + 'indexs\\index' + newMoudle.id + '.js'
-            fs.writeFileSync(indexPath, "import { AppRegistry } from 'react-native';" + '\n'
+            fs.writeFileSync(indexPath, `//${modleName}\n`
+                + "import { AppRegistry } from 'react-native';" + '\n'
                 + "import { AppWrapper } from '../baseApp';" + '\n'
-                + "import " + modlePermission + " from '../app/page/" + mSelectedSys + '/' + modlePermission.charAt(0).toLocaleLowerCase() + modlePermission.slice(1) + "'\n"
+                + "import " + modlePermission + " from '../app/page/" + mSelectedSysItem.label + '/' + modlePermission.charAt(0).toLocaleLowerCase() + modlePermission.slice(1) + "'\n"
                 + "AppRegistry.registerComponent('yunexpress_app_" + newMoudle.id + "', () => AppWrapper(" + modlePermission + "));")
 
             let yunExpressIndexPath = projDir + path.sep + 'YunExpressIndex.js'
@@ -747,12 +772,12 @@ export default function PackageView(props) {
             // let codeLines = yunExpressIndexFile.split('\r')
             // for(let line of codeLines){
             // }
-            let lastSysImportToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.lastIndexOf('./app/page/' + mSelectedSys))
+            let lastSysImportToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.lastIndexOf('./app/page/' + mSelectedSysItem.label))
             let lastSysImport = lastSysImportToEnd.substring(0, lastSysImportToEnd.indexOf('\r'))
 
-            let newImport = lastSysImport + '\r' + `import ${modlePermission} from './app/page/${mSelectedSys + '/' + clasePackageName}/index';`
+            let newImport = lastSysImport + '\r' + `import ${modlePermission} from './app/page/${mSelectedSysItem.label + '/' + clasePackageName}/index'; //${modleName}`
             yunExpressIndexFile = yunExpressIndexFile.replace(lastSysImport, newImport)
-            let constSysAppsFunciotnToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.indexOf(`const ${mSelectedSys}Apps = {`))
+            let constSysAppsFunciotnToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.indexOf(`const ${mSelectedSysItem.label}Apps = {`))
             let constSysAppsFunciotn = constSysAppsFunciotnToEnd.substring(0, constSysAppsFunciotnToEnd.indexOf('}'))
             let newFuncion = constSysAppsFunciotn + `	yunexpress_app_${newMoudle.id}: ${modlePermission}, //${modleName}\r`
             yunExpressIndexFile = yunExpressIndexFile.replace(constSysAppsFunciotn, newFuncion)
@@ -762,12 +787,12 @@ export default function PackageView(props) {
             message.info('请选择系统！')
             return
         }
-        setSelectedSys(undefined)
+        // set(undefined)
         setVisible(false)
     }
 
     let handleCancel = () => {
-        setSelectedSys(undefined)
+        // setSeSelectedSyslectedSys(undefined)
         setVisible(false)
     }
 
@@ -1050,7 +1075,7 @@ export default function PackageView(props) {
                     <text style={{ color: '#555' }}>模块系统：</text>
                     <Dropdown overlay={menu} trigger={['click']} selectable>
                         <Space>
-                            {selectedSys || '请选择系统'}
+                            {selectedSys && selectedSys.label || '请选择系统'}
                             <DownOutlined />
                         </Space>
                     </Dropdown>

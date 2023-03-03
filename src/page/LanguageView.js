@@ -256,7 +256,7 @@ export default function LanguageView(props) {
                         setOutputTextArea(obj2Excel(inputTextArea))
                         return
                     }
-                    if (outputTextArea && inputTextArea && inputTextArea.startsWith('{')) {
+                    if (outputTextArea && inputTextArea) {
 
                         let zhObj = {}
                         let otherObj = {}
