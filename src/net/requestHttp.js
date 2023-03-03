@@ -2,11 +2,10 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 15:24:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-12-14 09:43:38
- * @FilePath: \RN-MultiBundler-UI\src\net\requestHttp.js
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @LastEditTime: 2023-02-27 16:44:49
  */
 import axios from 'axios';
+// axios.defaults.adapter = require('axios/lib/adapters/http');
 
 const instance = axios.create({
     baseURL: "https://filestorage.yunexpress.com",
@@ -20,19 +19,19 @@ const defaultHeaders = {
 }
 
 //https://filestorage.yunexpress.com/yunexpress-fileupload/PDA/1.2.0_YT_pro.apk
-export const getUploadUrl = (fileName) => 'https://filestorage.yunexpress.com/yunexpress-fileupload/PDA/' + fileName
+export const getUploadUrl = (fileName, dir) => `https://filestorage.yunexpress.com/yunexpress-fileupload/${dir || 'PDA'}/` + fileName
 
 //请求拦截处理
-// instance.interceptors.request.use(function (config) {
-//     // config.headers = {
-//     // 	...config.headers,
-//     // }
-//     // 在发送请求之前做些什么
-//     return config;
-// }, function (error) {
-//     // 对请求错误做些什么
-//     return Promise.reject(error);
-// });
+instance.interceptors.request.use(function (config) {
+    // config.headers = {
+    // 	...config.headers,
+    // }
+    // 在发送请求之前做些什么
+    return config;
+}, function (error) {
+    // 对请求错误做些什么
+    return Promise.reject(error);
+});
 
 // //返回拦截处理
 instance.interceptors.response.use(function (response) {

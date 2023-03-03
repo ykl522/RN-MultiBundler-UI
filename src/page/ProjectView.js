@@ -2,7 +2,7 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2023-01-30 17:37:10
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-02-08 17:09:38
+ * @LastEditTime: 2023-02-10 14:36:52
  * @FilePath: \RN-MultiBundler-UI\src\page\ProjectView.js
  * @Description: 项目管理
  */
@@ -103,7 +103,7 @@ export default function ProjectView() {
         let cmdStr = `CHCP 65001 && echo ${copyPath} | clip`
         console.log('copyPath------>' + copyPath)
         WinExec.cmd(cmdStr)
-        openNotification('复制安装包本地链接成功')
+        openNotification(`复制${isRelease ? '线上' : '线下'}安装包的本地下载链接成功`)
     }
 
     return (
