@@ -2,13 +2,13 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-27 09:55:52
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-01-12 16:05:08
+ * @LastEditTime: 2023-02-27 16:55:43
  * @FilePath: \RN-MultiBundler-UI\src\page\ApiView.js
  * @Description: Api调试
  */
 import { useState, useEffect, useRef } from 'react';
 const { Button, Input, notification } = require('antd');
-import * as RequestHttp from '../net/RequestHttp'
+import { post, get, uploadFile, getUploadUrl } from '../net/requestHttp';
 const { remote } = require("electron");
 import { workSpace } from '../config'
 
@@ -26,6 +26,25 @@ export default function ApiView() {
         });
     };
 
+    const uploadFileReq = (url, fileName, file) => {
+        uploadFile(url, fileName, file, (progress) => {
+            setProgress((progress * 100).toFixed(0) + '%')
+            if (progress == 1) {
+                openNotification('bottomRight', '上传完成')
+            }
+        }).then((res) => {
+            setResponseResult(JSON.stringify(res, null, 2))
+        }).catch((err) => {
+            if (url && !url.includes('APP')) {
+                let url = getUploadUrl(fileName, 'APP')
+                uploadFileReq(url, fileName, file)
+            } else {
+                setResponseResult(JSON.stringify(err, null, 2))
+                openNotification('bottomRight', '文件已存在')
+            }
+        })
+    }
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: 30, paddingRight: 30 }}>
             {contextHolder}
@@ -41,7 +60,7 @@ export default function ApiView() {
                         openNotification('bottomRight', '请输入接口地址')
                     }
                     setResponseResult('')
-                    RequestHttp.post(stateRef.current.url, stateRef.current.params ? JSON.parse(stateRef.current.params) : null).then((res) => {
+                    post(stateRef.current.url, stateRef.current.params ? JSON.parse(stateRef.current.params) : null).then((res) => {
                         setResponseResult(JSON.stringify(res, null, 2))
                     })
                 }}>POST</Button>
@@ -50,7 +69,7 @@ export default function ApiView() {
                         openNotification('bottomRight', '请输入接口地址')
                     }
                     setResponseResult('')
-                    RequestHttp.get(stateRef.current.url).then((res) => {
+                    get(stateRef.current.url).then((res) => {
                         setResponseResult(JSON.stringify(res, null, 2))
                     })
                 }}>GET</Button>
@@ -70,21 +89,19 @@ export default function ApiView() {
                             if (filePath) {
                                 const file = filePath[0] + '';
                                 let fileName = file.substring(file.lastIndexOf('\\') + 1)
-                                let url = RequestHttp.getUploadUrl(fileName)
-                                RequestHttp.uploadFile(url, fileName, file, (progress) => {
-                                    setProgress((progress * 100).toFixed(0) + '%')
-                                    if (progress == 1) {
-                                        openNotification('bottomRight', '上传完成')
-                                        // let to = setTimeout(() => {
-                                        //     clearTimeout(to)
-                                        // }, 0)
-                                    }
-                                }).then((res) => {
-                                    setResponseResult(JSON.stringify(res, null, 2))
-                                }).catch((err) => {
-                                    setResponseResult(JSON.stringify(err, null, 2))
-                                    openNotification('bottomRight', '文件已存在')
-                                })
+                                let url = getUploadUrl(fileName)
+                                uploadFileReq(url, fileName, file)
+                                // uploadFile(url, fileName, file, (progress) => {
+                                //     setProgress((progress * 100).toFixed(0) + '%')
+                                //     if (progress == 1) {
+                                //         openNotification('bottomRight', '上传完成')
+                                //     }
+                                // }).then((res) => {
+                                //     setResponseResult(JSON.stringify(res, null, 2))
+                                // }).catch((err) => {
+                                //     setResponseResult(JSON.stringify(err, null, 2))
+                                //     openNotification('bottomRight', '文件已存在')
+                                // })
                             } else {
                                 openNotification('bottomRight', '取消选择文件')
                             }

@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-24 15:11:41
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-11-11 15:22:10
+ * @LastEditTime: 2023-02-10 14:30:57
  * @FilePath: \RN-MultiBundler-UI\src\page\QRCodeView.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,6 +13,7 @@ const { Button, Input, notification } = require('antd');
 let jsBarcodeRefs = []
 
 export default function QRCodeView() {
+
     const codeRef = useRef()
     const [api, contextHolder] = notification.useNotification();
     const [code, setCode] = useState({ value: '', type: 0 })

@@ -2,8 +2,8 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-01-30 17:38:59
- * @FilePath: \RN-MultiBundler-UI\src\app.jsx
+ * @LastEditTime: 2023-03-01 11:12:20
+ * @FilePath: \ops_pdad:\Git\RN-MultiBundler-UI\src\app.jsx
  * @Description: 首页
  */
 const React = require('react');

@@ -1,8 +1,8 @@
 /*
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-09-23 16:21:57
- * @LastEditors: 袁康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2022-10-27 18:14:37
+ * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditTime: 2023-02-27 17:27:04
  * @FilePath: \RN-MultiBundler-UI\src\main.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */

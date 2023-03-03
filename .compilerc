@@ -3,20 +3,45 @@
     "development": {
       "application/javascript": {
         "presets": [
-          ["env", { "targets": { "electron": "1.6.0" } }],
+          [
+            "env",
+            {
+              "targets": {
+                "electron": "21.2.2"
+              }
+            }
+          ],
           "react"
         ],
-        "plugins": ["transform-async-to-generator", "transform-es2015-classes", "react-hot-loader/babel"],
+        "plugins": [
+          "transform-async-to-generator",
+          "transform-es2015-classes",
+          "react-hot-loader/babel"
+        ],
         "sourceMaps": "inline"
+      },
+      "text/less": {
+        "dumpLineNumbers": "comments"
       }
     },
     "production": {
       "application/javascript": {
         "presets": [
-          ["env", { "targets": { "electron": "1.6.0" } }],
+          [
+            "env",
+            {
+              "targets": {
+                "electron": "21.2.2"
+              }
+            }
+          ],
+          "es2016-node5",
           "react"
         ],
-        "plugins": ["transform-async-to-generator", "transform-es2015-classes"],
+        "plugins": [
+          "react-hot-loader/babel",
+          "transform-async-to-generator"
+        ],
         "sourceMaps": "none"
       }
     }
