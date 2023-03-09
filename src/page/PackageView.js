@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-02-16 10:20:50
+ * @LastEditTime: 2023-03-09 14:20:33
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 打包工具
  */
@@ -87,7 +87,7 @@ export default function PackageView(props) {
     );
     const entryIndexRef = useRef(0)
     const logTextRef = useRef()
-    const stateRef = useRef({ type: 'base' })
+    const stateRef = useRef({ type: 'base', isAddI18n: true })
     const [entryIndex, setEntryIndex] = useState(0)
     const [platform, setPlatform] = useState('android') //平台 android iOS
     const [env, setEnv] = useState('false') //环境 release debug
@@ -577,6 +577,7 @@ export default function PackageView(props) {
         console.log('+---------read----------+')
     }
 
+    // 删除目录文件
     let deleteDir = (nowPath) => {
         // 读取目录中的所有文件及文件夹（同步操作）
         let files = fs.readdirSync(nowPath)
@@ -694,6 +695,7 @@ export default function PackageView(props) {
             return
         }
         if (selectedSys && selectedSys.label) {
+            let isExistMode = false
             let mUpperSelectedSys = selectedSys.label.replace(/([A-Z])/g, '_$1').toLocaleUpperCase()
             let jsonPath = projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json'
             let jsonStr = fs.readFileSync(jsonPath, 'utf8')
@@ -714,6 +716,11 @@ export default function PackageView(props) {
                 if (menuInfo.permission == mUpperSelectedSys) {
                     // alert(JSON.stringify(menuInfo.childData, null, 2))
                     for (let menuChild of menuInfo.childData) {
+                        if (menuChild.permission == modlePermission) {
+                            newMoudle = menuChild
+                            isExistMode = true
+                            break
+                        }
                         if (menuChild.id >= newMoudle.id) {
                             newMoudle = {
                                 childName: modleName,
@@ -729,7 +736,11 @@ export default function PackageView(props) {
                     menuInfo.childData.push(newMoudle)
                 }
             }
-            fs.writeFileSync(jsonPath, JSON.stringify(menuList, null, 2), 'utf-8')
+            if (!isExistMode) {
+                fs.writeFileSync(jsonPath, JSON.stringify(menuList, null, 2), 'utf-8')
+            }
+
+            // 入口创建 
             let mSelectedSysItem = { key: selectedSys.key, label: selectedSys.label, id: selectedSys.id }
             if (mSelectedSysItem.label == 'cims') {
                 mSelectedSysItem.label = 'cims2'
@@ -739,49 +750,122 @@ export default function PackageView(props) {
             let classPath = projDir + path.sep + 'app\\page\\' + mSelectedSysItem.label + '\\' + clasePackageName
             if (!fs.existsSync(classPath))
                 fs.mkdirSync(classPath)
-            // 入口创建    
             fs.writeFileSync(classPath + '\\index.tsx', `//${modleName}\n`
-                + "import React from 'react'" + '\n'
+                + "import React from 'react';" + '\n'
                 + "import { NavigationContainer } from '@react-navigation/native';" + '\n'
                 + "import { createStackNavigator } from '@react-navigation/stack';" + '\n'
-                + "import { View } from 'react-native';" + '\n'
+                + `import ${modlePermission} from './${modlePermission}';` + '\n'
                 + "import { mapProps } from '../../../../baseApp';" + '\n'
                 + "const Stack = createStackNavigator();" + '\n'
                 + "const APP = (props: any) => {" + '\n'
                 + "\treturn (" + '\n'
                 + "\t\t<NavigationContainer>" + '\n'
                 + "\t\t\t<Stack.Navigator>" + '\n'
-                + `\t\t\t\t<Stack.Screen name="AllocationOut" options={{ headerShown: false }} component={mapProps(View, props)} />` + '\n'
+                + `\t\t\t\t<Stack.Screen name="${modlePermission}" options={{ headerShown: false }} component={mapProps(${modlePermission}, props)} />` + '\n'
                 + "\t\t\t</Stack.Navigator>" + '\n'
                 + "\t\t</NavigationContainer>" + '\n'
                 + "\t);" + '\n'
                 + "}" + '\n\n'
                 + "export default APP;"
             )
-            //新增map配置
-            addModuleConfig(newMoudle)
-            let indexPath = projDir + path.sep + 'indexs\\index' + newMoudle.id + '.js'
-            fs.writeFileSync(indexPath, `//${modleName}\n`
-                + "import { AppRegistry } from 'react-native';" + '\n'
-                + "import { AppWrapper } from '../baseApp';" + '\n'
-                + "import " + modlePermission + " from '../app/page/" + mSelectedSysItem.label + '/' + modlePermission.charAt(0).toLocaleLowerCase() + modlePermission.slice(1) + "'\n"
-                + "AppRegistry.registerComponent('yunexpress_app_" + newMoudle.id + "', () => AppWrapper(" + modlePermission + "));")
+            // 界面首页
+            fs.writeFileSync(classPath + `\\${modlePermission}.tsx`, ``
+                + "import React from 'react'" + '\n'
+                + "import { View } from 'react-native'" + '\n'
+                + "import { CommonStyle } from 'react-native-yunexpress-ui'" + '\n'
+                + (stateRef.current.isAddI18n ?
+                    `import I18n from '../../../i18n/${mSelectedSysItem.label}/${clasePackageName}'\n` : '')
+                + `import HeadBar from "../../../components/HeadBar"` + '\n\n'
+                + `//${modleName}\n`
+                + `export default function ${modlePermission}(props: any){\n\n`
+                + `\treturn(\n`
+                + `\t\t<View style={CommonStyle.baseBackgrand}>\n`
+                + `\t\t\t<HeadBar\n`
+                + `\t\t\t\t{...props}\n`
+                + `\t\t\t\tBGColor={2}\n`
+                + (stateRef.current.isAddI18n ?
+                    `\t\t\t\ttitle={I18n.t('${modlePermission}.title')}\n` : `\t\t\t\ttitle={"${modleName}"}\n`)
+                + `\t\t\t\thideRightView\n`
+                + `\t\t\t\t/>\n`
+                + `\t\t</View>\n`
+                + `\t)\n`
+                + `}`
+            )
 
-            let yunExpressIndexPath = projDir + path.sep + 'YunExpressIndex.js'
-            let yunExpressIndexFile = fs.readFileSync(yunExpressIndexPath, 'utf8')
-            // let codeLines = yunExpressIndexFile.split('\r')
-            // for(let line of codeLines){
-            // }
-            let lastSysImportToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.lastIndexOf('./app/page/' + mSelectedSysItem.label))
-            let lastSysImport = lastSysImportToEnd.substring(0, lastSysImportToEnd.indexOf('\r'))
-
-            let newImport = lastSysImport + '\r' + `import ${modlePermission} from './app/page/${mSelectedSysItem.label + '/' + clasePackageName}/index'; //${modleName}`
-            yunExpressIndexFile = yunExpressIndexFile.replace(lastSysImport, newImport)
-            let constSysAppsFunciotnToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.indexOf(`const ${mSelectedSysItem.label}Apps = {`))
-            let constSysAppsFunciotn = constSysAppsFunciotnToEnd.substring(0, constSysAppsFunciotnToEnd.indexOf('}'))
-            let newFuncion = constSysAppsFunciotn + `	yunexpress_app_${newMoudle.id}: ${modlePermission}, //${modleName}\r`
-            yunExpressIndexFile = yunExpressIndexFile.replace(constSysAppsFunciotn, newFuncion)
-            fs.writeFileSync(yunExpressIndexPath, yunExpressIndexFile, 'utf-8')
+            if (!isExistMode) {
+                //新增map配置
+                addModuleConfig(newMoudle)
+                // 正式index入口配置
+                let indexPath = projDir + path.sep + 'indexs\\index' + newMoudle.id + '.js'
+                fs.writeFileSync(indexPath, `//${modleName}\n`
+                    + "import { AppRegistry } from 'react-native';" + '\n'
+                    + "import { AppWrapper } from '../baseApp';" + '\n'
+                    + "import " + modlePermission + " from '../app/page/" + mSelectedSysItem.label + '/' + modlePermission.charAt(0).toLocaleLowerCase() + modlePermission.slice(1) + "'\n"
+                    + "AppRegistry.registerComponent('yunexpress_app_" + newMoudle.id + "', () => AppWrapper(" + modlePermission + "));")
+                // 调试入口配置
+                let yunExpressIndexPath = projDir + path.sep + 'YunExpressIndex.js'
+                let yunExpressIndexFile = fs.readFileSync(yunExpressIndexPath, 'utf8')
+                let lastSysImportToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.lastIndexOf('./app/page/' + mSelectedSysItem.label))
+                let lastSysImport = lastSysImportToEnd.substring(0, lastSysImportToEnd.indexOf('\r'))
+                let newImport = lastSysImport + '\r' + `import ${modlePermission} from './app/page/${mSelectedSysItem.label + '/' + clasePackageName}/index'; //${modleName}`
+                yunExpressIndexFile = yunExpressIndexFile.replace(lastSysImport, newImport)
+                let constSysAppsFunciotnToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.indexOf(`const ${mSelectedSysItem.label}Apps = {`))
+                let constSysAppsFunciotn = constSysAppsFunciotnToEnd.substring(0, constSysAppsFunciotnToEnd.indexOf('}'))
+                let newFuncion = constSysAppsFunciotn + `	yunexpress_app_${newMoudle.id}: ${modlePermission}, //${modleName}\r`
+                yunExpressIndexFile = yunExpressIndexFile.replace(constSysAppsFunciotn, newFuncion)
+                fs.writeFileSync(yunExpressIndexPath, yunExpressIndexFile, 'utf-8')
+            }
+            // 新增多语言文件
+            if (stateRef.current.isAddI18n) {
+                let i18nDir = projDir + path.sep + 'app' + path.sep + 'i18n' + path.sep + mSelectedSysItem.label
+                if (!fs.existsSync(i18nDir)) {
+                    fs.mkdirSync(i18nDir)
+                }
+                let clasePackageName = modlePermission.charAt(0).toLocaleLowerCase() + modlePermission.slice(1, modlePermission.includes('Page') ? modlePermission.indexOf('Page') : modlePermission.length)
+                let modeI18nDir = i18nDir + path.sep + clasePackageName
+                if (!fs.existsSync(modeI18nDir)) {
+                    fs.mkdirSync(modeI18nDir)
+                }
+                let index = modeI18nDir + path.sep + 'index.ts'
+                fs.writeFileSync(index, ''
+                    + `import i18n from 'react-native-i18n';\n`
+                    + `import { word } from './word'\n\n`
+                    + `export default class I18n {\n\n`
+                    + `\t/**\n`
+                    + `\t * 获取词条\n`
+                    + `\t * xx:{zh: 'Xx%{k}xxx', ...}\n`
+                    + `\t * I18n.t('xx', {k:v}) //Xxvxxx\n`
+                    + `\t * @param key\n`
+                    + `\t * @param value\n`
+                    + `\t */\n`
+                    + `\tstatic t(key: string, value?: { [key: string]: any }) {\n`
+                    + `\t\tif (!word[key]) return '';\n`
+                    + `\t\tif (typeof value === 'object' && value != null) {\n`
+                    + "\t\t\treturn `${word[key][i18n.locale] ?? ''}`.replace(/%{([^}]+)}/g, (_s1, s2) => {\n"
+                    + `\t\t\t\treturn value[s2]\n`
+                    + `\t\t\t})\n`
+                    + `\t\t}\n`
+                    + `\t\treturn word[key][i18n.locale]\n`
+                    + `\t}\n`
+                    + `}`
+                )
+                let word = modeI18nDir + path.sep + 'word.ts'
+                fs.writeFileSync(word, ''
+                    + `interface NObject {\n`
+                    + `\t[key: string]: {\n`
+                    + `\t\t[key: string]: string\n`
+                    + `\t}\n`
+                    + `}\n\n`
+                    + `//${modleName}多语言词条\n`
+                    + `export const word: NObject = {\n`
+                    + `\t"${modlePermission}.title": {\n`
+                    + `\t\t"zh": "${modleName}",\n`
+                    + `\t\t"en": "${modleName}",\n`
+                    + `\t\t"fr": "${modleName}",\n`
+                    + `\t},\n`
+                    + `}`
+                )
+            }
             message.info('创建模块成功')
         } else {
             message.info('请选择系统！')
@@ -1045,6 +1129,7 @@ export default function PackageView(props) {
             </div>
             <div>{cmd}</div>
             <TextArea ref={logTextRef} value={cmdStr} rows={10} readonly={true} style={{ marginTop: 12, width: 1200 }} />
+            {/* ==============================================新增模块弹框======================================== */}
             <Modal
                 title="新增模块"
                 visible={visible}
@@ -1080,7 +1165,18 @@ export default function PackageView(props) {
                         </Space>
                     </Dropdown>
                 </div>
+                <Space style={{ marginTop: 10 }}>
+                    <Checkbox
+                        defaultChecked
+                        onChange={(e) => {
+                            console.log(`checked = ${e.target.checked}`);
+                            stateRef.current.isAddI18n = !!e.target.checked
+                        }}
+                    />
+                    <text>是否同时新增多语言</text>
+                </Space>
             </Modal >
+            {/* ===========================================模块信息侧边抽屉================================= */}
             <Drawer title="模块信息" width={700} placement="right" onClose={onClose} open={open}>
                 {getModules()}
             </Drawer>
