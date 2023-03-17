@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-01 11:12:20
+ * @LastEditTime: 2023-03-17 16:24:08
  * @FilePath: \ops_pdad:\Git\RN-MultiBundler-UI\src\app.jsx
  * @Description: 首页
  */
@@ -18,6 +18,8 @@ import YapiJson2Ts from './page/YapiJson2Ts'
 import Md5View from './page/Md5View'
 import ApkView from './page/ApkView';
 import ProjectView from './page/ProjectView';
+import ModelView from './page/ModelView';
+import LogView from './page/LogView';
 class App extends React.Component {
 
 	constructor(props) {
@@ -41,6 +43,8 @@ class App extends React.Component {
 			{ label: 'MD5', key: 'item-6', children: <Md5View /> },
 			{ label: 'APK', key: 'item-7', children: <ApkView /> },
 			{ label: '项目管理', key: 'item-8', children: <ProjectView /> },
+			// { label: '模板', key: 'item-9', children: <ModelView /> },
+			{ label: '安卓日志', key: 'item-9', children: <LogView tabChangeKey={this.state.activeKey} /> },
 		];
 		return (
 			<Tabs
