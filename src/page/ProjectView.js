@@ -2,7 +2,7 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2023-01-30 17:37:10
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-02-10 14:36:52
+ * @LastEditTime: 2023-03-17 14:30:10
  * @FilePath: \RN-MultiBundler-UI\src\page\ProjectView.js
  * @Description: 项目管理
  */
@@ -264,7 +264,7 @@ export default function ProjectView() {
             <div style={{ flexDirection: 'row' }}>
                 <Button style={{ width: 140, marginTop: 0, marginBottom: 15 }} onClick={() => {
                     verify(project => {
-                        WinExec.cmd('start cmd /k', project.directory)
+                        WinExec.cmd('start cmd /k chcp 65001', project.directory)
                     })
                 }}>打开项目CMD</Button>
                 <Button style={{ width: 140, marginTop: 0, marginLeft: 15 }} onClick={() => {
