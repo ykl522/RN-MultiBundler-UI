@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-09 14:20:33
+ * @LastEditTime: 2023-03-10 11:26:44
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 打包工具
  */
@@ -119,20 +119,22 @@ export default function PackageView(props) {
 
     useEffect(() => {
 
-        window.api && window.api.changeDir((event, value) => {
+        require('electron').ipcRenderer.on('changeDir', (event, value) => {
             // event.sender.send('counter-value', newValue)
-            console.log(value)
+            // console.log('==================' + event, value)
+            projDir = value
+            message.info('修改项目根目录为：' + projDir)
         })
         // let openType = 'openDirectory';
         // let filter = undefined;
         // let title = '清选择RN工程目录';
-        initDir(curBinDirName)
+        initDir(projDir)
         // setTimeout(() => {
         // }, 2000)
         // remote.dialog.showOpenDialog(
         //     remote.getCurrentWindow(),
         //     {
-        //         defaultPath: curBinDirName,
+        //         defaultPath: projDir,
         //         title: title,
         //         buttonLabel: '选择',
         //         filters: filter,
@@ -149,7 +151,6 @@ export default function PackageView(props) {
 
     let initDir = (curDir) => {
         //load lock.json
-        // const curDir = curBinDirName;
         console.log('curDir', path.dirname(curDir));
         projDir = curDir;
         while (projDir.length > 2) {
@@ -301,10 +302,7 @@ export default function PackageView(props) {
         let filter = undefined;
         if (id == 'entry') {
             // openType = 'openFile';
-
             openType = 'multiSelections';
-
-
             title = '打包入口文件选择';
             filter = [
                 {
@@ -637,7 +635,7 @@ export default function PackageView(props) {
         if (!inputValue) inputValue = '0'
         //只取两位
         if (inputValue && inputValue.length > 2) inputValue = inputValue.substring(0, 2)
-        let configPath = curBinDirName + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
+        let configPath = projDir + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
         let json = fs.readFileSync(configPath, 'utf8')
         let config = JSON.parse(json)
         let selectFileName = entry + ''
@@ -646,13 +644,13 @@ export default function PackageView(props) {
         let newJson = JSON.stringify(config, null, 2)
         // alert(newJson)
         fs.writeFileSync(configPath, newJson, 'utf8')
-        fs.unlinkSync(curBinDirName + path.sep + 'multibundler' + path.sep + 'index' + id + 'Map.json')
+        fs.unlinkSync(projDir + path.sep + 'multibundler' + path.sep + 'index' + id + 'Map.json')
     }
 
     //新增map
     let addModuleConfig = (newMoudle) => {
         if (newMoudle) {
-            let configPath = curBinDirName + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
+            let configPath = projDir + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
             let json = fs.readFileSync(configPath, 'utf8')
             let config = JSON.parse(json)
             config[`index${newMoudle.id}.js`] = Number(newMoudle.id + '00000')
@@ -663,7 +661,7 @@ export default function PackageView(props) {
 
     //获取Map里面版本号
     let getModuleVersion = (selectFileName) => {
-        let configPath = curBinDirName + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
+        let configPath = projDir + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
         let json = fs.readFileSync(configPath, 'utf8')
         let config = JSON.parse(json)
         console.log("selectFileName--->" + selectFileName)
@@ -674,7 +672,7 @@ export default function PackageView(props) {
 
     //清空原配置
     let cleanConfig = () => {
-        let multibundlerPath = curBinDirName + path.sep + 'multibundler' + path.sep
+        let multibundlerPath = projDir + path.sep + 'multibundler' + path.sep
         let mainConfig = multibundlerPath + 'platformMap.json'
         fs.writeFileSync(mainConfig, "[]", 'utf8')
         let files = fs.readdirSync(multibundlerPath)
@@ -975,8 +973,8 @@ export default function PackageView(props) {
                 <div style={{ width: '20px' }} ></div>
                 {stateRef.current.type == 'buz' ? renderItem('版本', <Input disabled={!entry || (entry && entry.includes(',,'))} ref={ref => versionInput = ref} onChange={(e) => {
                     if (e.target.value) {
-                        setAssetsDir(curBinDirName + '\\remotebundles')
-                        setBundleDir(curBinDirName + '\\remotebundles')
+                        setAssetsDir(projDir + '\\remotebundles')
+                        setBundleDir(projDir + '\\remotebundles')
                     } else {
                         setAssetsDir(projDir + path.sep + 'android\\app\\src\\main\\res')
                         setBundleDir(projDir + path.sep + 'android\\app\\src\\main\\assets')
@@ -1028,15 +1026,15 @@ export default function PackageView(props) {
                     remote.shell.openItem(bundleDir)
                 }}>跳转打包目录</Button>
                 {stateRef.current.type == 'buz' ? <Button style={{ marginTop: 12, marginLeft: 15, width: 130, color: '#555' }} onClick={() => {
-                    // remote.shell.openItem(curBinDirName + '\\remotebundles')
-                    const packageDir = curBinDirName + '\\remotebundles\\'
-                    fs.readdir(curBinDirName + '\\remotebundles\\drawable-mdpi', 'utf8', (e, files) => {
+                    // remote.shell.openItem(projDir + '\\remotebundles')
+                    const packageDir = projDir + '\\remotebundles\\'
+                    fs.readdir(projDir + '\\remotebundles\\drawable-mdpi', 'utf8', (e, files) => {
                         // alert(JSON.stringify(files, null, 2))
-                        fs.readdir(curBinDirName + '\\android\\app\\src\\main\\res\\drawable-mdpi', 'utf8', (e, resFiles) => {
+                        fs.readdir(projDir + '\\android\\app\\src\\main\\res\\drawable-mdpi', 'utf8', (e, resFiles) => {
                             let zipRes = []
                             files && files.forEach((file) => {
                                 if (resFiles.includes(file)) {
-                                    fs.unlinkSync(curBinDirName + '\\remotebundles\\drawable-mdpi\\' + file)
+                                    fs.unlinkSync(projDir + '\\remotebundles\\drawable-mdpi\\' + file)
                                 } else {
                                     zipRes.push(file)
                                 }
@@ -1086,8 +1084,8 @@ export default function PackageView(props) {
                     const fs = require('fs');
                     const path = require('path')
                     let newDateFile = {}
-                    // let dir = curBinDirName + '\\android\\app\\build\\outputs\\apk\\YT\\release\\'
-                    let dir = curBinDirName + selectedChannel.dir
+                    // let dir = projDir + '\\android\\app\\build\\outputs\\apk\\YT\\release\\'
+                    let dir = projDir + selectedChannel.dir
                     fs.readdirSync(dir).forEach(fileName => {
                         const fileDir = path.join(dir, fileName)
                         let stats = fs.statSync(fileDir)
