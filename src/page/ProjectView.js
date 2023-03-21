@@ -2,7 +2,7 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2023-01-30 17:37:10
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-21 10:08:00
+ * @LastEditTime: 2023-03-21 16:37:36
  * @FilePath: \RN-MultiBundler-UI\src\page\ProjectView.js
  * @Description: 项目管理
  */
@@ -43,20 +43,6 @@ export default function ProjectView(props) {
             }
         }
     }, [props.tabChangeKey])
-
-    // useEffect(() => {
-    //     if (localStorage.projectList) {
-    //         let localProjectList = JSON.parse(localStorage.projectList)
-    //         for (let lp of localProjectList) {
-    //             if (lp.directory)
-    //                 WinExec.cmd('git branch --show-current', lp.directory, (result) => {
-    //                     lp.branch = result.toString().replace('\n', '').replace('\r', '')
-    //                     setProjectList([...localProjectList])
-    //                 })
-    //         }
-    //         setProjectList(localProjectList)
-    //     }
-    // }, [])
 
     // 验证项目是否勾选
     const verify = (callback) => {
@@ -143,7 +129,9 @@ export default function ProjectView(props) {
                                 p.isChecked = false
                             }
                         }
-                        setProjectList([...projectList])
+                        let newProjectList = [...projectList]
+                        setProjectList(newProjectList)
+                        localStorage.projectList = JSON.stringify(newProjectList)
                     }} />
                 <div style={{ width: 450, marginLeft: 10, fontWeight: 'bold', color: '#000' }}>项目目录（第一次增加后要手动选择）</div>
                 <div style={{ width: 150, fontWeight: 'bold', color: '#000' }}>当前分支</div>
@@ -162,7 +150,9 @@ export default function ProjectView(props) {
                                     } else {
                                         v.isChecked = false
                                     }
-                                    setProjectList([...projectList])
+                                    let newProjectList = [...projectList]
+                                    setProjectList(newProjectList)
+                                    localStorage.projectList = JSON.stringify(newProjectList)
                                 }} />
                             <div style={{ width: 450, marginLeft: 10 }} onClick={() => {
                                 remote.dialog.showOpenDialog(
