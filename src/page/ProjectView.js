@@ -2,18 +2,18 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2023-01-30 17:37:10
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-17 14:30:10
+ * @LastEditTime: 2023-03-21 10:08:00
  * @FilePath: \RN-MultiBundler-UI\src\page\ProjectView.js
  * @Description: 项目管理
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 const { Button, Modal, notification, Checkbox } = require('antd');
 const { remote } = require("electron");
 import { workSpace } from '../config'
 import WinExec from '../utils/WinExec';
 const projDir = workSpace || __dirname;
 
-export default function ProjectView() {
+export default function ProjectView(props) {
     const [modal, modalContextHolder] = Modal.useModal();
     const [api, contextHolder] = notification.useNotification();
     const openNotification = (des, placement = 'bottomRight') => {
@@ -24,20 +24,39 @@ export default function ProjectView() {
         });
     };
     const [projectList, setProjectList] = useState([{}])
+    const [loading, setLoading] = useState(false)
 
-    useEffect(() => {
-        if (localStorage.projectList) {
-            let localProjectList = JSON.parse(localStorage.projectList)
-            for (let lp of localProjectList) {
-                if (lp.directory)
-                    WinExec.cmd('git branch --show-current', lp.directory, (result) => {
-                        lp.branch = result.toString().replace('\n', '').replace('\r', '')
-                        setProjectList([...localProjectList])
-                    })
+    useMemo(() => {
+        console.log('-----------------TabChange----------------')
+        console.log("tabChangeKey===>" + props.tabChangeKey)
+        if (props.tabChangeKey === 'item-8') {
+            if (localStorage.projectList) {
+                let localProjectList = JSON.parse(localStorage.projectList)
+                for (let lp of localProjectList) {
+                    if (lp.directory)
+                        WinExec.cmd('git branch --show-current', lp.directory, (result) => {
+                            lp.branch = result.toString().replace('\n', '').replace('\r', '')
+                            setProjectList([...localProjectList])
+                        })
+                }
+                setProjectList(localProjectList)
             }
-            setProjectList(localProjectList)
         }
-    }, [])
+    }, [props.tabChangeKey])
+
+    // useEffect(() => {
+    //     if (localStorage.projectList) {
+    //         let localProjectList = JSON.parse(localStorage.projectList)
+    //         for (let lp of localProjectList) {
+    //             if (lp.directory)
+    //                 WinExec.cmd('git branch --show-current', lp.directory, (result) => {
+    //                     lp.branch = result.toString().replace('\n', '').replace('\r', '')
+    //                     setProjectList([...localProjectList])
+    //                 })
+    //         }
+    //         setProjectList(localProjectList)
+    //     }
+    // }, [])
 
     // 验证项目是否勾选
     const verify = (callback) => {
@@ -59,7 +78,7 @@ export default function ProjectView() {
         let newDateFile = {}
         let dir = project.directory + `\\android\\app\\build\\outputs\\apk\\YT\\${isRelease ? 'release' : 'debug'}\\`
         if (!fs.existsSync(dir)) {
-            dir = project.directory + `\\android\\app\\${isRelease ? 'release' : 'debug'}`
+            dir = project.directory + `\\android\\app\\build\\outputs\\apk\\${isRelease ? 'release' : 'debug'}`
         }
         if (!fs.existsSync(dir)) {
             openNotification('文件目录不存在！')
@@ -300,6 +319,42 @@ export default function ProjectView() {
                         copyApkLocalUrl(project)
                     })
                 }}>复制线下包本地链接</Button>
+                <Button
+                    loading={loading}
+                    style={{ width: 160, marginLeft: 15, marginBottom: 15 }}
+                    onClick={() => {
+                        setLoading(true)
+                        verify(project => {
+                            WinExec.cmd('chcp 65001 && gradlew assembleDebug', project.directory + '\\android\\', null, (isSuccess) => {
+                                setLoading(false)
+                                if (isSuccess) {
+                                    openNotification('打包成功')
+                                } else {
+                                    openNotification('打包出错')
+                                }
+                            }).catch((msg) => {
+                                openNotification('执行出错: ' + msg)
+                            })
+                        })
+                    }}>安卓打包debug包</Button>
+                <Button
+                    loading={loading}
+                    style={{ width: 160, marginLeft: 15, marginBottom: 15 }}
+                    onClick={() => {
+                        setLoading(true)
+                        verify(project => {
+                            WinExec.cmd('chcp 65001 && gradlew assembleRelease', project.directory + '\\android\\', null, (isSuccess) => {
+                                setLoading(false)
+                                if (isSuccess) {
+                                    openNotification('打包成功')
+                                } else {
+                                    openNotification('打包出错')
+                                }
+                            }).catch((msg) => {
+                                openNotification('执行出错: ' + msg)
+                            })
+                        })
+                    }}>安卓打包release包</Button>
             </div>
         </div>
     )

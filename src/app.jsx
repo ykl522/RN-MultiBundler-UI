@@ -2,12 +2,12 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-17 16:24:08
+ * @LastEditTime: 2023-03-21 11:06:35
  * @FilePath: \ops_pdad:\Git\RN-MultiBundler-UI\src\app.jsx
  * @Description: 首页
  */
 const React = require('react');
-
+const { ipcRenderer } = require('electron')
 const { Tabs } = require('antd');
 import { workSpace } from './config'
 import LanguageView from './page/LanguageView';
@@ -30,7 +30,9 @@ class App extends React.Component {
 	}
 
 	componentDidMount() {
-
+		ipcRenderer.send('close-loading-window', {
+			isClose: true
+		})
 	}
 
 	render() {
@@ -42,7 +44,7 @@ class App extends React.Component {
 			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
 			{ label: 'MD5', key: 'item-6', children: <Md5View /> },
 			{ label: 'APK', key: 'item-7', children: <ApkView /> },
-			{ label: '项目管理', key: 'item-8', children: <ProjectView /> },
+			{ label: '项目管理', key: 'item-8', children: <ProjectView tabChangeKey={this.state.activeKey} /> },
 			// { label: '模板', key: 'item-9', children: <ModelView /> },
 			{ label: '安卓日志', key: 'item-9', children: <LogView tabChangeKey={this.state.activeKey} /> },
 		];
