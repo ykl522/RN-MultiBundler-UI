@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-01-10 15:59:16
+ * @LastEditTime: 2023-03-21 11:23:02
  * @FilePath: \RN-MultiBundler-UI\src\index.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,7 +15,7 @@ import path from 'path'
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
+let mainWindow, loadingWindow;
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
   // application specific logging, throwing an error, or other logic here
@@ -24,11 +24,28 @@ const isDevMode = process.execPath.match(/[\\/]electron/);
 
 if (isDevMode) enableLiveReload({ strategy: 'react-hmr' });
 
+const createLoadingWindow = async () => {
+  loadingWindow = new BrowserWindow({
+    width: 600,
+    height: 300,
+    useContentSize: true,
+    show: true,
+    maximizable: false, //禁止双击放大
+    frame: false //去掉顶部操作栏
+  })
+  loadingWindow.loadURL('file://' + __dirname + '/loading.html')
+  Menu.setApplicationMenu(null)
+  loadingWindow.on('closed', () => {
+    loadingWindow = null
+  })
+}
+
 const createWindow = async () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1500,
     height: 1000,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -145,7 +162,16 @@ const createWindow = async () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+  createLoadingWindow()
+  createWindow()
+  ipcMain.on('close-loading-window', (_e, res) => {
+    if (res && res.isClose) {
+      loadingWindow.close()
+      mainWindow.show()
+    }
+  })
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
