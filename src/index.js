@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-21 16:16:11
+ * @LastEditTime: 2023-03-21 17:37:01
  * @FilePath: \RN-MultiBundler-UI\src\index.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -124,6 +124,11 @@ const createWindow = async () => {
           label: '访问工具Github地址', click: async () => {
             const { shell } = require('electron')
             await shell.openExternal('https://github.com/ykl522/RN-MultiBundler-UI')
+          }
+        },
+        {
+          label: '看板娘', click: async () => {
+            mainWindow.webContents.executeJavaScript(require('./external/autoload').kbn)
           }
         },
         {
