@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-10 11:26:44
+ * @LastEditTime: 2023-03-30 10:49:45
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 打包工具
  */
@@ -108,8 +108,8 @@ export default function PackageView(props) {
     const [packageStaus, setPackageStaus] = useState(0)
     const [modleName, setModleName] = useState('')
     const [modlePermission, setModlePermission] = useState('')
-
     const [open, setOpen] = useState(false);
+
     const showDrawer = () => {
         setOpen(true);
     };
@@ -124,29 +124,17 @@ export default function PackageView(props) {
             // console.log('==================' + event, value)
             projDir = value
             message.info('修改项目根目录为：' + projDir)
+            packageJsonFile = path.join(projDir, packageFileName)
+            packageLockFile = path.join(projDir, packageLockFileName);
+            if (stateRef.current.type == 'base') {
+                setEntry(projDir + path.sep + 'platformDep-ui.js')
+            } else {
+                setEntry('')
+            }
+            setAssetsDir(projDir + path.sep + 'android\\app\\src\\main\\res')
+            setBundleDir(projDir + path.sep + 'android\\app\\src\\main\\assets')
         })
-        // let openType = 'openDirectory';
-        // let filter = undefined;
-        // let title = '清选择RN工程目录';
         initDir(projDir)
-        // setTimeout(() => {
-        // }, 2000)
-        // remote.dialog.showOpenDialog(
-        //     remote.getCurrentWindow(),
-        //     {
-        //         defaultPath: projDir,
-        //         title: title,
-        //         buttonLabel: '选择',
-        //         filters: filter,
-        //         properties: [openType]
-        //     },
-        //     (filePath) => {
-        //         if (filePath) {
-        //             const directory = filePath[0];
-        //             initDir(directory);
-        //         }
-        //     }
-        // )
     }, [])
 
     let initDir = (curDir) => {
@@ -641,8 +629,16 @@ export default function PackageView(props) {
         let selectFileName = entry + ''
         const id = selectFileName.substring(selectFileName.lastIndexOf('index') + 5, selectFileName.indexOf('.js'))
         config[selectFileName.substring(selectFileName.lastIndexOf('\\') + 1)] = Number(id + formatZero(inputValue, 2) + '000')
-        let newJson = JSON.stringify(config, null, 2)
-        // alert(newJson)
+        // 配置排序
+        let newConfig = {}
+        for (let key of Object.keys(config).sort((a, b) => {
+            const idA = a.substring(a.lastIndexOf('index') + 5, a.indexOf('.js'))
+            const idB = b.substring(b.lastIndexOf('index') + 5, b.indexOf('.js'))
+            return idA - idB
+        })) {
+            newConfig[key] = config[key]
+        }
+        let newJson = JSON.stringify(newConfig, null, 2)
         fs.writeFileSync(configPath, newJson, 'utf8')
         fs.unlinkSync(projDir + path.sep + 'multibundler' + path.sep + 'index' + id + 'Map.json')
     }
@@ -782,7 +778,7 @@ export default function PackageView(props) {
                 + `\t\t\t\t{...props}\n`
                 + `\t\t\t\tBGColor={2}\n`
                 + (stateRef.current.isAddI18n ?
-                    `\t\t\t\ttitle={I18n.t('${modlePermission}.title')}\n` : `\t\t\t\ttitle={"${modleName}"}\n`)
+                    `\t\t\t\ttitle={I18n.t('Title')}\n` : `\t\t\t\ttitle={"${modleName}"}\n`)
                 + `\t\t\t\thideRightView\n`
                 + `\t\t\t\t/>\n`
                 + `\t\t</View>\n`
@@ -856,7 +852,7 @@ export default function PackageView(props) {
                     + `}\n\n`
                     + `//${modleName}多语言词条\n`
                     + `export const word: NObject = {\n`
-                    + `\t"${modlePermission}.title": {\n`
+                    + `\t"Title": {\n`
                     + `\t\t"zh": "${modleName}",\n`
                     + `\t\t"en": "${modleName}",\n`
                     + `\t\t"fr": "${modleName}",\n`
