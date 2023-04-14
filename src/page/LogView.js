@@ -2,7 +2,7 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2023-03-17 15:44:57
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-21 10:32:03
+ * @LastEditTime: 2023-04-11 09:42:28
  * @FilePath: \RN-MultiBundler-UI\src\page\Model.js
  * @Description: 日志
  */
@@ -10,6 +10,7 @@ import { useRef, useState, useEffect } from 'react'
 import WinExec from '../utils/WinExec';
 const { notification, Input, Space, Button, Dropdown, Menu } = require('antd');
 import { DownOutlined } from '@ant-design/icons';
+// import ffi from 'ffi-napi'
 
 export default (props) => {
     const filtersRef = useRef()
@@ -30,6 +31,8 @@ export default (props) => {
 
     useEffect(() => {
         logContentRef.current.isExe = false
+        // const kernel32 = ffi.Library('kernel32', { 'Beep': ['int', ['int', 'int']] })
+        // kernel32.Beep(1000, 1000)
     }, [selectDevice])
 
     const getDevices = () => {

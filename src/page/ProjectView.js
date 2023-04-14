@@ -2,7 +2,7 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2023-01-30 17:37:10
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-21 16:37:36
+ * @LastEditTime: 2023-04-12 17:14:38
  * @FilePath: \RN-MultiBundler-UI\src\page\ProjectView.js
  * @Description: 项目管理
  */
@@ -26,21 +26,39 @@ export default function ProjectView(props) {
     const [projectList, setProjectList] = useState([{}])
     const [loading, setLoading] = useState(false)
 
-    useMemo(() => {
-        console.log('-----------------TabChange----------------')
-        console.log("tabChangeKey===>" + props.tabChangeKey)
-        if (props.tabChangeKey === 'item-8') {
+    /**
+     * 刷新项目目录
+     */
+    const refreshList = () => {
+        try {
             if (localStorage.projectList) {
                 let localProjectList = JSON.parse(localStorage.projectList)
                 for (let lp of localProjectList) {
                     if (lp.directory)
                         WinExec.cmd('git branch --show-current', lp.directory, (result) => {
-                            lp.branch = result.toString().replace('\n', '').replace('\r', '')
-                            setProjectList([...localProjectList])
+                            let branch = result.toString().replace('\n', '').replace('\r', '')
+                            console.log('branch==' + branch)
+                            console.log('lp.branch==' + lp.branch)
+                            if (lp.branch != branch) {
+                                lp.branch = branch
+                                let newProjectList = [...localProjectList]
+                                setProjectList(newProjectList)
+                                localStorage.projectList = JSON.stringify(newProjectList)
+                            }
                         })
                 }
                 setProjectList(localProjectList)
             }
+        } catch (error) {
+            if (error && error.message) console.log(error.message)
+        }
+    }
+
+    useMemo(() => {
+        console.log('-----------------TabChange----------------')
+        console.log("tabChangeKey===>" + props.tabChangeKey)
+        if (props.tabChangeKey === 'item-8') {
+            refreshList()
         }
     }, [props.tabChangeKey])
 
@@ -115,10 +133,15 @@ export default function ProjectView(props) {
         <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: 30, paddingRight: 30 }}>
             {modalContextHolder}
             {contextHolder}
-            <Button style={{ width: 100, marginTop: 5, marginBottom: 15 }} onClick={() => {
-                let newProjectList = [...projectList, {}]
-                setProjectList(newProjectList)
-            }}>增加</Button>
+            <div style={{ flexDirection: 'row' }}>
+                <Button style={{ width: 100, marginTop: 5, marginBottom: 15 }} onClick={() => {
+                    let newProjectList = [...projectList, {}]
+                    setProjectList(newProjectList)
+                }}>增加</Button>
+                <Button style={{ width: 100, marginTop: 5, marginBottom: 15, marginLeft: 15 }} onClick={() => {
+                    refreshList()
+                }}>分支刷新</Button>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
                 <Checkbox
                     onChange={(e) => {
