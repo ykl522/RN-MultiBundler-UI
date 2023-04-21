@@ -2,26 +2,31 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2023-01-10 16:34:41
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-01-28 10:56:26
+ * @LastEditTime: 2023-04-20 14:17:04
  * @FilePath: \RN-MultiBundler-UI\src\page\ApkView.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import { useState, useEffect, useRef } from 'react';
 import { InboxOutlined } from '@ant-design/icons';
-const { Button, Input, notification, Upload } = require('antd');
+import WinExec from '../utils/WinExec';
+const { Button, Menu, notification, Upload, Space, Dropdown } = require('antd');
+import { DownOutlined } from '@ant-design/icons';
 const { remote } = require("electron");
 const { exec } = require('child_process');
 const path = require('path');
 const toolPath = path.dirname(__dirname).substring(0, __dirname.lastIndexOf(path.sep)) + path.sep + 'tools' + path.sep
 
-export default function ApkView() {
+export default function ApkView(props) {
 
     const [api, contextHolder] = notification.useNotification();
     const [loading, setLoading] = useState(false)
     const [fileList, setFileList] = useState([])
+    const [selectDevice, setSelectDevicce] = useState('')
+    const [devices, setDevices] = useState([])
+    const devicesRef = useRef([])
     let fileListRef = useRef([])
 
-    const openNotification = (placement, des) => {
+    const openNotification = (des, placement = 'bottomRight') => {
         api.info({
             message: `提示`,
             description: des,
@@ -29,7 +34,7 @@ export default function ApkView() {
         });
     };
 
-    const props = {
+    const propsDragger = {
         name: 'file',
         multiple: true,
         showUploadList: fileList.length > 0,
@@ -37,7 +42,7 @@ export default function ApkView() {
             console.log('file.type: ', file.type)
             const isApk = file.type === 'application/vnd.android.package-archive'
             if (!isApk) {
-                openNotification('bottomRight', '文件格式不对，必须是APK安装包')
+                openNotification('文件格式不对，必须是APK安装包')
             }
             return isApk
         },
@@ -115,15 +120,47 @@ export default function ApkView() {
         if (fileListRef.current && fileListRef.current.length > 0 && fileListRef.current[0]) {
             return true
         } else {
-            openNotification('bottomRight', '目录不存在，请先拖入APK再解析！')
+            openNotification('目录不存在，请先拖入APK再操作！')
         }
         return false
+    }
+
+    const devicesMenu = (
+        <Menu
+            selectable
+            onClick={(e) => {
+                console.log(e.key)
+                console.log(devices)
+                if (devices[e.key].label) {
+                    setSelectDevicce(devices[e.key])
+                }
+            }}
+            items={devices}
+        />
+    );
+
+    const getDevices = () => {
+        console.log('-----------------获取adb设备----------------' + props.tabChangeKey)
+        if (props.tabChangeKey == 'item-7') {
+            WinExec.cmd(`nox_adb devices`, null, (data) => {
+                let list = `${data}`.split('\n')
+                devicesRef.current = []
+                for (let device of list) {
+                    if (device.trim() && !device.includes('List of devices attached')) {
+                        let deviceObj = { key: devicesRef.current.length + '', label: device.replace('device', '').trim() }
+                        devicesRef.current.push(deviceObj)
+                    }
+                }
+                console.log('-----------------刷新adb设备----------------' + devicesRef.current.length)
+                setDevices(devicesRef.current)
+            })
+        }
     }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: 30, paddingRight: 30 }}>
             {contextHolder}
-            <Upload.Dragger height={250} {...props} fileList={fileList}>
+            <Upload.Dragger height={250} {...propsDragger} fileList={fileList}>
                 <p className="ant-upload-drag-icon">
                     <InboxOutlined />
                 </p>
@@ -145,11 +182,11 @@ export default function ApkView() {
                         let packageProcess = exec(cmdStr, { cwd: path.dirname(filePath), encoding: 'buffer' }, (error, stdout, stderr) => {
                             const iconv = require('iconv-lite')
                             if (error) {
-                                openNotification('bottomRight', '解析APK执行出错')
+                                openNotification('解析APK执行出错')
                                 console.error(`执行出错: ${iconv.decode(error.message, 'cp936')}`);
                                 // return;
                             } else {
-                                openNotification('bottomRight', '解析APK完成！')
+                                openNotification('解析APK完成！')
                             }
                             console.log(`stdout: ${iconv.decode(stdout, 'CP936')}`);
                             console.log(`stderr: ${iconv.decode(stderr, 'CP936')}`);
@@ -162,7 +199,7 @@ export default function ApkView() {
                             // setCmdStr(cmdRetStrs)
                             // console.log(logTextRef.current.resizableTextArea.textArea.scrollHeight)
                         });
-                        openNotification('bottomRight', '正在解析APK文件...')
+                        openNotification('正在解析APK文件...')
                     }
                 }}>解析APK</Button>
                 <Button style={{ width: 120, marginLeft: 15 }} onClick={() => {
@@ -177,7 +214,7 @@ export default function ApkView() {
                             deleteDir(`${path.dirname(fileListRef.current[0].path) + path.sep + path.basename(fileListRef.current[0].path, '.apk')}`)
                             setLoading(false)
                             clearTimeout(t)
-                            openNotification('bottomRight', '清空解析目录完成！')
+                            openNotification('清空解析目录完成！')
                         }, 200)
                     }
                 }}>清空解析目录</Button>
@@ -192,11 +229,11 @@ export default function ApkView() {
                         let packageProcess = exec(cmdStr, { cwd: path.dirname(filePath), encoding: 'buffer' }, (error, stdout, stderr) => {
                             const iconv = require('iconv-lite')
                             if (error) {
-                                openNotification('bottomRight', '二次打包执行出错')
+                                openNotification('二次打包执行出错')
                                 console.error(`执行出错: ${iconv.decode(error.message, 'cp936')}`);
                                 // return;
                             } else {
-                                openNotification('bottomRight', '二次打包APK完成！')
+                                openNotification('二次打包APK完成！')
                             }
                             console.log(`stdout: ${iconv.decode(stdout, 'CP936')}`);
                             console.log(`stderr: ${iconv.decode(stderr, 'CP936')}`);
@@ -209,7 +246,7 @@ export default function ApkView() {
                             // setCmdStr(cmdRetStrs)
                             // console.log(logTextRef.current.resizableTextArea.textArea.scrollHeight)
                         });
-                        openNotification('bottomRight', '正在二次打包APK文件...')
+                        openNotification('正在二次打包APK文件...')
                     }
                 }}>二次打包</Button>
                 <Button style={{ width: 120, marginLeft: 15 }} loading={loading} onClick={() => {
@@ -224,11 +261,11 @@ export default function ApkView() {
                         let packageProcess = exec(cmdStr, { cwd: path.dirname(path.dirname(filePath)), encoding: 'buffer' }, (error, stdout, stderr) => {
                             const iconv = require('iconv-lite')
                             if (error) {
-                                openNotification('bottomRight', '签名执行出错')
+                                openNotification('签名执行出错')
                                 console.error(`执行出错: ${iconv.decode(error.message, 'cp936')}`);
                                 // return;
                             } else {
-                                openNotification('bottomRight', '签名APK完成！')
+                                openNotification('签名APK完成！')
                             }
                             console.log(`stdout: ${iconv.decode(stdout, 'CP936')}`);
                             console.log(`stderr: ${iconv.decode(stderr, 'CP936')}`);
@@ -251,6 +288,52 @@ export default function ApkView() {
                     }
                 }}>跳转新APP目录</Button>
             </div>
+            <Space >
+                <Dropdown
+                    overlay={devicesMenu}
+                    trigger={['click']}
+                    selectable
+                    onOpenChange={(flag) => {
+                        console.log('--------onOpenChange---------' + flag)
+                        if (flag) {
+                            getDevices()
+                        }
+                    }}
+                >
+                    <Space>
+                        {selectDevice && selectDevice.label || '请选择设备'}
+                        <DownOutlined />
+                    </Space>
+                </Dropdown>
+                <Button style={{ marginLeft: 5 }} loading={loading} onClick={() => {
+                    if (fileIsExist()) {
+                        setLoading(true)
+                        WinExec.cmd(`nox_adb -s ${selectDevice.label} install -r ${fileListRef.current[0].path}`, null, null, (isSuccess, result) => {
+                            setLoading(false)
+                            if (isSuccess) {
+                                openNotification('安装成功')
+                            } else {
+                                openNotification('安装失败: ' + result)
+                            }
+                        })
+                    }
+                }}>安装APP</Button>
+                <Button style={{ marginLeft: 10 }} loading={loading} onClick={() => {
+                    if (fileIsExist()) {
+                        setLoading(true)
+                        let filePath = fileListRef.current[0].path
+                        let newApk = path.dirname(filePath) + path.sep + 'New_' + path.basename(filePath)
+                        WinExec.cmd(`nox_adb -s ${selectDevice.label} install -r ${newApk}`, null, null, (isSuccess, result) => {
+                            setLoading(false)
+                            if (isSuccess) {
+                                openNotification('安装成功')
+                            } else {
+                                openNotification('安装失败: ' + result)
+                            }
+                        })
+                    }
+                }}>安装新APP</Button>
+            </Space>
         </div>
     )
 }
