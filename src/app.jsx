@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-21 11:06:35
+ * @LastEditTime: 2023-04-20 10:30:25
  * @FilePath: \ops_pdad:\Git\RN-MultiBundler-UI\src\app.jsx
  * @Description: 首页
  */
@@ -43,7 +43,7 @@ class App extends React.Component {
 			{ label: '接口', key: 'item-4', children: <ApiView /> },
 			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
 			{ label: 'MD5', key: 'item-6', children: <Md5View /> },
-			{ label: 'APK', key: 'item-7', children: <ApkView /> },
+			{ label: 'APK', key: 'item-7', children: <ApkView tabChangeKey={this.state.activeKey} /> },
 			{ label: '项目管理', key: 'item-8', children: <ProjectView tabChangeKey={this.state.activeKey} /> },
 			// { label: '模板', key: 'item-9', children: <ModelView /> },
 			{ label: '安卓日志', key: 'item-9', children: <LogView tabChangeKey={this.state.activeKey} /> },
