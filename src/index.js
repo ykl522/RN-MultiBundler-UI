@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-21 17:37:01
+ * @LastEditTime: 2023-05-18 17:45:35
  * @FilePath: \RN-MultiBundler-UI\src\index.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -172,8 +172,10 @@ app.on('ready', () => {
   createWindow()
   ipcMain.on('close-loading-window', (_e, res) => {
     if (res && res.isClose) {
-      loadingWindow.close()
-      mainWindow.show()
+      if (loadingWindow)
+        loadingWindow.close()
+      if (mainWindow)
+        mainWindow.show()
     }
   })
 });
