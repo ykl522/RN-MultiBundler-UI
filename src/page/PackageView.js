@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-03-30 10:49:45
+ * @LastEditTime: 2023-05-18 18:40:05
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 打包工具
  */
@@ -141,15 +141,20 @@ export default function PackageView(props) {
         //load lock.json
         console.log('curDir', path.dirname(curDir));
         projDir = curDir;
-        while (projDir.length > 2) {
+        if (projDir.length > 3) {
             packageLockFile = path.join(projDir, packageLockFileName);
             packageJsonFile = path.join(projDir, packageFileName);
             if (fs.existsSync(packageLockFile)) {
                 console.log('package-lock.json---> ' + packageLockFile);
                 // projDir = dirTmp;//要分包的项目目录
-                break;
+            } else {
+                projDir = path.dirname(projDir);
+                initDir(projDir)
+                return
             }
-            dirTmp = path.dirname(projDir);
+        } else {
+            alert('没有找到package-lock.json文件')
+            return
         }
         if (packageJsonFile != null) {
             console.log('packageJsonFile==> ' + packageJsonFile)
