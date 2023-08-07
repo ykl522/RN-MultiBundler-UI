@@ -2,7 +2,7 @@
  * @Author: 康乐 yuankangle@yunexpress.cn
  * @Date: 2023-01-10 16:34:41
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-04-20 14:17:04
+ * @LastEditTime: 2023-08-03 13:45:31
  * @FilePath: \RN-MultiBundler-UI\src\page\ApkView.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -79,6 +79,7 @@ export default function ApkView(props) {
         }
     };
 
+    /**删除目录文件 */
     let deleteDir = (nowPath) => {
         const fs = require("fs");
         if (fs.existsSync(nowPath)) {
@@ -116,6 +117,7 @@ export default function ApkView(props) {
     //     })
     // }
 
+    /**判断文件是否存在 */
     let fileIsExist = () => {
         if (fileListRef.current && fileListRef.current.length > 0 && fileListRef.current[0]) {
             return true
@@ -125,6 +127,7 @@ export default function ApkView(props) {
         return false
     }
 
+    /**设备多选菜单 */
     const devicesMenu = (
         <Menu
             selectable
@@ -139,6 +142,7 @@ export default function ApkView(props) {
         />
     );
 
+    /**获取USB链接设备 */
     const getDevices = () => {
         console.log('-----------------获取adb设备----------------' + props.tabChangeKey)
         if (props.tabChangeKey == 'item-7') {
