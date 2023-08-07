@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-05-18 18:40:05
+ * @LastEditTime: 2023-08-03 14:03:17
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 打包工具
  */
@@ -618,6 +618,7 @@ export default function PackageView(props) {
         })
     }
 
+    /**字符串前补0 */
     let formatZero = (num, len) => {
         if (String(num).length > len) return num;
         return (Array(len).join(0) + num).slice(-len);
@@ -625,7 +626,7 @@ export default function PackageView(props) {
 
     //更新Map版本号
     let updateModuleIdConfig = (inputValue) => {
-        if (!inputValue) inputValue = '0'
+        if (!inputValue) return
         //只取两位
         if (inputValue && inputValue.length > 2) inputValue = inputValue.substring(0, 2)
         let configPath = projDir + path.sep + 'multibundler' + path.sep + 'ModuleIdConfig.json'
@@ -645,7 +646,20 @@ export default function PackageView(props) {
         }
         let newJson = JSON.stringify(newConfig, null, 2)
         fs.writeFileSync(configPath, newJson, 'utf8')
-        fs.unlinkSync(projDir + path.sep + 'multibundler' + path.sep + 'index' + id + 'Map.json')
+        let mapPath = projDir + path.sep + 'multibundler' + path.sep + 'index' + id + 'Map.json'
+        if(fs.existsSync(mapPath)) fs.unlinkSync(mapPath)
+        // assets同步
+        let asstesPath = projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json'
+        let assetsJson = fs.readFileSync(asstesPath, 'utf8')
+        let obj = JSON.parse(assetsJson)
+        for(const item of obj){
+            for(const child of item.childData){
+                if(child.id == id){
+                    child.version = Number(inputValue)
+                }
+            }
+        }
+        fs.writeFileSync(asstesPath, JSON.stringify(obj, null, 2), 'utf8')
     }
 
     //新增map
@@ -684,6 +698,7 @@ export default function PackageView(props) {
         alert("清除完成，请重新打基础包和插件包")
     }
 
+    /**新增模块 创建点击事件 */
     let handleOk = () => {
         if (!modleName) {
             message.info('请输入模块名称！')
@@ -899,9 +914,31 @@ export default function PackageView(props) {
         return btnText;
     }
 
+    /**获取模块信息 */
     let getModules = () => {
         let json = fs.readFileSync(projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json', 'utf8')
         let obj = JSON.parse(json)
+        let collection = obj[0]
+        // console.log('collection======', collection)
+        if(collection && Array.isArray(collection.childData) && collection.permission == 'Collection'){
+            collection.childData.unshift({
+                childName: '历史任务',
+                id: 11,
+                permission: 'HistoryTask',
+                version: 0,
+                resKey: 'model_history_task',
+                parent: "Collection"
+            })
+            collection.childData.unshift({
+                childName: '揽收任务',
+                id: 10,
+                permission: 'TabTask',
+                resKey: 'model_tab_task',
+                version: 0,
+                parent: "Collection"
+            })
+        }
+        // console.log('collection======2', collection)
         const subColumns = [
             {
                 title: '功能',
@@ -920,6 +957,11 @@ export default function PackageView(props) {
                 dataIndex: 'permission',
                 key: 'permission',
             },
+            {
+                title: '版本',
+                dataIndex: 'version',
+                key: 'version',
+            }
         ]
         const columns = [
             {
@@ -962,6 +1004,7 @@ export default function PackageView(props) {
         )
     }
 
+    // 界面UI
     return (
         <div style={{ paddingLeft: 30, paddingTop: 0, display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', flexDirection: 'row' }}>

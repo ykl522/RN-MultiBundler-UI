@@ -2,14 +2,15 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 15:24:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-02-27 16:44:49
+ * @LastEditTime: 2023-08-03 09:59:50
  */
 import axios from 'axios';
 // axios.defaults.adapter = require('axios/lib/adapters/http');
 
+// 上传文件超时3分钟
 const instance = axios.create({
     baseURL: "https://filestorage.yunexpress.com",
-    timeout: 60000
+    timeout: 180000
 });
 
 const defaultHeaders = {
