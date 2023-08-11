@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-08-03 14:03:17
+ * @LastEditTime: 2023-08-10 16:04:20
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 打包工具
  */
@@ -34,13 +34,13 @@ let packageLockFile = path.join(projDir, packageLockFileName);
 export default function PackageView(props) {
 
     const sysItems = [
-        { label: 'prs', key: '0', },
-        { label: 'ots', key: '1', },
+        { label: 'prs', key: '0', id: 2 },
+        { label: 'ots', key: '1', id: 1 },
         { label: 'ops', key: '2', },
-        { label: 'cims', key: '3', },
-        { label: 'rms', key: '4', },
-        { label: 'cis', key: '5', },
-        { label: 'dts', key: '6', },
+        { label: 'cims', key: '3', id: 4 },
+        { label: 'rms', key: '4', id: 5 },
+        { label: 'cis', key: '5', id: 7 },
+        { label: 'dts', key: '6', id: 3 },
         { label: 'sims', key: '7', },
         { label: 'config', key: '8', id: 9 },
         { label: 'inboundSorting', key: '9', id: 10 },
@@ -669,7 +669,15 @@ export default function PackageView(props) {
             let json = fs.readFileSync(configPath, 'utf8')
             let config = JSON.parse(json)
             config[`index${newMoudle.id}.js`] = Number(newMoudle.id + '00000')
-            let newJson = JSON.stringify(config, null, 2)
+            let newConfig = {}
+            for (let key of Object.keys(config).sort((a, b) => {
+                const idA = a.substring(a.lastIndexOf('index') + 5, a.indexOf('.js'))
+                const idB = b.substring(b.lastIndexOf('index') + 5, b.indexOf('.js'))
+                return idA - idB
+            })) {
+                newConfig[key] = config[key]
+            }
+            let newJson = JSON.stringify(newConfig, null, 2)
             fs.writeFileSync(configPath, newJson, 'utf8')
         }
     }
@@ -820,12 +828,12 @@ export default function PackageView(props) {
                 let yunExpressIndexPath = projDir + path.sep + 'YunExpressIndex.js'
                 let yunExpressIndexFile = fs.readFileSync(yunExpressIndexPath, 'utf8')
                 let lastSysImportToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.lastIndexOf('./app/page/' + mSelectedSysItem.label))
-                let lastSysImport = lastSysImportToEnd.substring(0, lastSysImportToEnd.indexOf('\r'))
-                let newImport = lastSysImport + '\r' + `import ${modlePermission} from './app/page/${mSelectedSysItem.label + '/' + clasePackageName}/index'; //${modleName}`
+                let lastSysImport = lastSysImportToEnd.substring(0, lastSysImportToEnd.indexOf('\n'))
+                let newImport = lastSysImport + '\n' + `import ${modlePermission} from './app/page/${mSelectedSysItem.label + '/' + clasePackageName}/index'; //${modleName}`
                 yunExpressIndexFile = yunExpressIndexFile.replace(lastSysImport, newImport)
                 let constSysAppsFunciotnToEnd = yunExpressIndexFile.substring(yunExpressIndexFile.indexOf(`const ${mSelectedSysItem.label}Apps = {`))
                 let constSysAppsFunciotn = constSysAppsFunciotnToEnd.substring(0, constSysAppsFunciotnToEnd.indexOf('}'))
-                let newFuncion = constSysAppsFunciotn + `	yunexpress_app_${newMoudle.id}: ${modlePermission}, //${modleName}\r`
+                let newFuncion = constSysAppsFunciotn + `	yunexpress_app_${newMoudle.id}: ${modlePermission}, //${modleName}\n`
                 yunExpressIndexFile = yunExpressIndexFile.replace(constSysAppsFunciotn, newFuncion)
                 fs.writeFileSync(yunExpressIndexPath, yunExpressIndexFile, 'utf-8')
             }
@@ -842,35 +850,25 @@ export default function PackageView(props) {
                 }
                 let index = modeI18nDir + path.sep + 'index.ts'
                 fs.writeFileSync(index, ''
-                    + `import i18n from 'react-native-i18n';\n`
+                    + `import { translate } from '../../t'\n`
                     + `import { word } from './word'\n\n`
                     + `export default class I18n {\n\n`
                     + `\t/**\n`
-                    + `\t * 获取词条\n`
+                    + `\t * ${modleName}获取词条\n`
                     + `\t * xx:{zh: 'Xx%{k}xxx', ...}\n`
                     + `\t * I18n.t('xx', {k:v}) //Xxvxxx\n`
-                    + `\t * @param key\n`
-                    + `\t * @param value\n`
+                    + `\t * @param {string} key\n`
+                    + `\t * @param {object} value\n`
                     + `\t */\n`
                     + `\tstatic t(key: string, value?: { [key: string]: any }) {\n`
-                    + `\t\tif (!word[key]) return '';\n`
-                    + `\t\tif (typeof value === 'object' && value != null) {\n`
-                    + "\t\t\treturn `${word[key][i18n.locale] ?? ''}`.replace(/%{([^}]+)}/g, (_s1, s2) => {\n"
-                    + `\t\t\t\treturn value[s2]\n`
-                    + `\t\t\t})\n`
-                    + `\t\t}\n`
-                    + `\t\treturn word[key][i18n.locale]\n`
+                    + `\t\treturn translate(word, key, value)\n`
                     + `\t}\n`
                     + `}`
                 )
                 let word = modeI18nDir + path.sep + 'word.ts'
                 fs.writeFileSync(word, ''
-                    + `interface NObject {\n`
-                    + `\t[key: string]: {\n`
-                    + `\t\t[key: string]: string\n`
-                    + `\t}\n`
-                    + `}\n\n`
-                    + `//${modleName}多语言词条\n`
+                    + `import type { NObject } from "../../t"\n\n`
+                    + `// ${modleName}多语言词条\n`
                     + `export const word: NObject = {\n`
                     + `\t"Title": {\n`
                     + `\t\t"zh": "${modleName}",\n`
