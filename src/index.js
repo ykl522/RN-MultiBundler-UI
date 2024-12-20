@@ -2,7 +2,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-05-18 17:45:35
+ * @LastEditTime: 2024-05-28 09:41:46
  * @FilePath: \RN-MultiBundler-UI\src\index.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -129,6 +129,11 @@ const createWindow = async () => {
         {
           label: '看板娘', click: async () => {
             mainWindow.webContents.executeJavaScript(require('./external/autoload').kbn)
+          }
+        },
+        {
+          label: '九宫格', click: async () => {
+            mainWindow.webContents.send('JGGViewSwitch')
           }
         },
         {

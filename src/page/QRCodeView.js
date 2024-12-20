@@ -2,9 +2,8 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-24 15:11:41
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-02-10 14:30:57
+ * @LastEditTime: 2024-09-27 10:11:56
  * @FilePath: \RN-MultiBundler-UI\src\page\QRCodeView.js
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import QRCode from 'qrcode.react';
 import Barcode from 'jsbarcode'
@@ -29,7 +28,7 @@ export default function QRCodeView() {
     useEffect(() => {
         if (code.value && code.type == 2) {
             codeRef.current && codeRef.current.split(' ').map((v, i) => {
-                Barcode(jsBarcodeRefs[i], v, {
+                v && Barcode(jsBarcodeRefs[i], v, {
                     format: 'CODE128',
                     renderer: 'svg',
                     width: 2,

@@ -3,7 +3,7 @@
  * @Author: 袁康乐 yuankangle@yunexpress.cn
  * @Date: 2022-10-21 16:37:25
  * @LastEditors: 康乐 yuankangle@yunexpress.cn
- * @LastEditTime: 2023-08-10 16:04:20
+ * @LastEditTime: 2024-07-11 15:17:21
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 打包工具
  */
@@ -647,19 +647,21 @@ export default function PackageView(props) {
         let newJson = JSON.stringify(newConfig, null, 2)
         fs.writeFileSync(configPath, newJson, 'utf8')
         let mapPath = projDir + path.sep + 'multibundler' + path.sep + 'index' + id + 'Map.json'
-        if(fs.existsSync(mapPath)) fs.unlinkSync(mapPath)
+        if (fs.existsSync(mapPath)) fs.unlinkSync(mapPath)
         // assets同步
         let asstesPath = projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json'
-        let assetsJson = fs.readFileSync(asstesPath, 'utf8')
-        let obj = JSON.parse(assetsJson)
-        for(const item of obj){
-            for(const child of item.childData){
-                if(child.id == id){
-                    child.version = Number(inputValue)
+        if (fs.existsSync(asstesPath)) { 
+            let assetsJson = fs.readFileSync(asstesPath, 'utf8')
+            let obj = JSON.parse(assetsJson)
+            for (const item of obj) {
+                for (const child of item.childData) {
+                    if (child.id == id) {
+                        child.version = Number(inputValue)
+                    }
                 }
             }
+            fs.writeFileSync(asstesPath, JSON.stringify(obj, null, 2), 'utf8')
         }
-        fs.writeFileSync(asstesPath, JSON.stringify(obj, null, 2), 'utf8')
     }
 
     //新增map
@@ -720,6 +722,9 @@ export default function PackageView(props) {
             let isExistMode = false
             let mUpperSelectedSys = selectedSys.label.replace(/([A-Z])/g, '_$1').toLocaleUpperCase()
             let jsonPath = projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json'
+            if (!fs.existsSync(jsonPath)) {
+                return
+            }
             let jsonStr = fs.readFileSync(jsonPath, 'utf8')
             let menuList = JSON.parse(jsonStr)
             if (selectedSys.label == 'prs') {
@@ -778,6 +783,10 @@ export default function PackageView(props) {
                 + "import { createStackNavigator } from '@react-navigation/stack';" + '\n'
                 + `import ${modlePermission} from './${modlePermission}';` + '\n'
                 + "import { mapProps } from '../../../../baseApp';" + '\n'
+                + `// 界面参数类型 参数默认undefined，参数可以是一个object` + '\n'
+                + `export type RootStackTransferMergeBoxes = {` + '\n'
+                + `\t${modlePermission}: undefined` + '\n'
+                + `}` + '\n\n'
                 + "const Stack = createStackNavigator();" + '\n'
                 + "const APP = (props: any) => {" + '\n'
                 + "\treturn (" + '\n'
@@ -797,9 +806,15 @@ export default function PackageView(props) {
                 + "import { CommonStyle } from 'react-native-yunexpress-ui'" + '\n'
                 + (stateRef.current.isAddI18n ?
                     `import I18n from '../../../i18n/${mSelectedSysItem.label}/${clasePackageName}'\n` : '')
-                + `import HeadBar from "../../../components/HeadBar"` + '\n\n'
+                + `import HeadBar from "../../../components/HeadBar"` + '\n'
+                + `import { RootStackTransferMergeBoxes } from '.'` + '\n'
+                + `import { StackNavigationProp } from '@react-navigation/stack'` + '\n'
+                + `import { ReactProps } from '@/types/global'` + '\n\n'
+                + `type Props = {` + '\n'
+                + `\tnavigation: StackNavigationProp<RootStackTransferMergeBoxes, '${modlePermission}'>` + '\n'
+                + `}` + '\n\n'
                 + `//${modleName}\n`
-                + `export default function ${modlePermission}(props: any){\n\n`
+                + `export default function ${modlePermission}(props: Props & ReactProps){\n\n`
                 + `\treturn(\n`
                 + `\t\t<View style={CommonStyle.baseBackgrand}>\n`
                 + `\t\t\t<HeadBar\n`
@@ -914,27 +929,31 @@ export default function PackageView(props) {
 
     /**获取模块信息 */
     let getModules = () => {
-        let json = fs.readFileSync(projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json', 'utf8')
-        let obj = JSON.parse(json)
-        let collection = obj[0]
-        // console.log('collection======', collection)
-        if(collection && Array.isArray(collection.childData) && collection.permission == 'Collection'){
-            collection.childData.unshift({
-                childName: '历史任务',
-                id: 11,
-                permission: 'HistoryTask',
-                version: 0,
-                resKey: 'model_history_task',
-                parent: "Collection"
-            })
-            collection.childData.unshift({
-                childName: '揽收任务',
-                id: 10,
-                permission: 'TabTask',
-                resKey: 'model_tab_task',
-                version: 0,
-                parent: "Collection"
-            })
+        const jsonPath = projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json'
+        let obj = []
+        if (fs.existsSync(jsonPath)) {
+            let json = fs.readFileSync(jsonPath, 'utf8')
+            obj = JSON.parse(json)
+            let collection = obj[0]
+            // console.log('collection======', collection)
+            if (collection && Array.isArray(collection.childData) && collection.permission == 'Collection') {
+                collection.childData.unshift({
+                    childName: '历史任务',
+                    id: 11,
+                    permission: 'HistoryTask',
+                    version: 0,
+                    resKey: 'model_history_task',
+                    parent: "Collection"
+                })
+                collection.childData.unshift({
+                    childName: '揽收任务',
+                    id: 10,
+                    permission: 'TabTask',
+                    resKey: 'model_tab_task',
+                    version: 0,
+                    parent: "Collection"
+                })
+            }
         }
         // console.log('collection======2', collection)
         const subColumns = [
