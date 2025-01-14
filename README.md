@@ -16,8 +16,17 @@
 
 <img src="https://github.com/smallnew/RN-MultiBundler-UI/raw/master/readme/choose_proj_dialog.jpg" width="600" alt="choose_proj_dialog"></img>
 
+## 工程目录读本地配置
+在程序入口exe同级目录下新建文件config.json 文件内容改为
+{
+    "dir": "E:\\Git\\YunExpress"
+}
+
 5、根据需要选择打包参数：
 
 <img src="https://github.com/smallnew/RN-MultiBundler-UI/raw/master/readme/packege_ui.jpg" width="600" alt="packege_ui"></img>
 
 该拆包工具跟命令行打包最大的优势是：当业务包依赖一个大型的第三方库的时候，这个第三方库又依赖的其他的第三方库，UI 打包工具能自动计算出所有需要打包进入的第三方库
+
+# ssh访问github
+https://juejin.cn/post/7224017330724175927

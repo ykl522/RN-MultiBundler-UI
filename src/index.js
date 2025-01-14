@@ -155,7 +155,7 @@ const createWindow = async () => {
   mainWindow.loadURL(url);
   // Open the DevTools.
   if (isDevMode) {
-    await installExtension(REACT_DEVELOPER_TOOLS);
+    // await installExtension(REACT_DEVELOPER_TOOLS);
     mainWindow.webContents.openDevTools();
     // require('devtron').install()
   }
@@ -182,6 +182,7 @@ app.on('ready', () => {
       if (mainWindow)
         mainWindow.show()
     }
+    mainWindow.webContents.send('ExePath', path.dirname(app.getPath('exe')).replace(/\\/g, '/'))
   })
 });
 

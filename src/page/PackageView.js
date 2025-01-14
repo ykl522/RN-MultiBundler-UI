@@ -9,7 +9,7 @@
  */
 const { Button, Checkbox, Input, Radio, Modal, Dropdown, Space, Menu, message, Drawer, Table } = require('antd');
 const CheckboxGroup = Checkbox.Group;
-const { remote } = require("electron");
+const { remote, app } = require("electron");
 const { exec } = require('child_process');
 import { useState, useEffect, useRef } from 'react';
 import { DownOutlined } from '@ant-design/icons';
@@ -118,21 +118,39 @@ export default function PackageView(props) {
     };
 
     useEffect(() => {
-
+        require('electron').ipcRenderer.on('ExePath', (event, exePath) => {
+            console.log('ExePath-------------->' + exePath)
+            //拼接好安装目录下的config.json
+            let configPath = `${exePath}/config.json`;
+            //使用fs读取文件内容
+            const fs = require('fs');
+            fs.readFile(configPath, 'utf-8', (err, data) => {
+                if (data) {
+                    //注意要转换json
+                    const config = JSON.parse(data)
+                    if (config.dir) {
+                        console.log('config-------------->' + config.dir)
+                        projDir = config.dir
+                        initDir(projDir)
+                    }
+                }
+            })
+        })
         require('electron').ipcRenderer.on('changeDir', (event, value) => {
             // event.sender.send('counter-value', newValue)
             // console.log('==================' + event, value)
             projDir = value
             message.info('修改项目根目录为：' + projDir)
-            packageJsonFile = path.join(projDir, packageFileName)
-            packageLockFile = path.join(projDir, packageLockFileName);
-            if (stateRef.current.type == 'base') {
-                setEntry(projDir + path.sep + 'platformDep-ui.js')
-            } else {
-                setEntry('')
-            }
-            setAssetsDir(projDir + path.sep + 'android\\app\\src\\main\\res')
-            setBundleDir(projDir + path.sep + 'android\\app\\src\\main\\assets')
+            // packageJsonFile = path.join(projDir, packageFileName)
+            // packageLockFile = path.join(projDir, packageLockFileName);
+            // if (stateRef.current.type == 'base') {
+            //     setEntry(projDir + path.sep + 'platformDep-ui.js')
+            // } else {
+            //     setEntry('')
+            // }
+            // setAssetsDir(projDir + path.sep + 'android\\app\\src\\main\\res')
+            // setBundleDir(projDir + path.sep + 'android\\app\\src\\main\\assets')
+            initDir(projDir)
         })
         initDir(projDir)
     }, [])
@@ -650,7 +668,7 @@ export default function PackageView(props) {
         if (fs.existsSync(mapPath)) fs.unlinkSync(mapPath)
         // assets同步
         let asstesPath = projDir + path.sep + 'android\\app\\src\\main\\assets\\data\\menu.json'
-        if (fs.existsSync(asstesPath)) { 
+        if (fs.existsSync(asstesPath)) {
             let assetsJson = fs.readFileSync(asstesPath, 'utf8')
             let obj = JSON.parse(assetsJson)
             for (const item of obj) {
