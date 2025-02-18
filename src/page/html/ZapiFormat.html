@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字符串转换工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        textarea,
+        pre {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100px;
+            margin-top: 10px;
+            box-sizing: border-box;
+            border: #ccc 1px solid;
+            padding: 10px;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        pre {
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+            /* CSS3 */
+            white-space: -moz-pre-wrap;
+            /* Mozilla */
+            white-space: -pre-wrap;
+            /* Opera 4-6 */
+            white-space: -o-pre-wrap;
+            /* Opera 7 */
+            word-wrap: break-word;
+            /* IE */
+        }
+    </style>
+</head>
+
+<body style="width: calc(100% - 60px);">
+    <a href="../yapi2ts/index.html">返回</a>
+    <h1>字符串转换工具</h1>
+    <textarea id="inputText" placeholder="请输入字符串..." rows="10" cols="50"></textarea>
+    <button onclick="convertString()">转换TS类型</button>
+    <pre id="outputText"></pre>
+
+    <script>
+        function convertString() {
+            const inputText = document.getElementById('inputText').value;
+            const lines = inputText.split('\n').map(line => line.trim());
+            const output = [];
+
+            lines.forEach(line => {
+                // 忽略空行和以"format:"开头的行
+                if (!line || line.startsWith('format:')) {
+                    return;
+                }
+
+                // 分割行数据（键、类型、是否必需、注释等）
+                const parts = line.split('\t').map(part => part.trim());
+                if (parts.length < 3) { // 至少应有键、类型和是否必需三部分
+                    // 注意：这里我们假设每行都是一个完整的属性声明，且以制表符分隔
+                    // 如果输入格式与此不符，可能需要进行额外的处理
+                    return;
+                }
+
+                // 提取键、类型、是否必需和注释
+                const [key, type, isRequiredStr, ...comments] = parts;
+                const isRequired = isRequiredStr === '是';
+                const questionMark = isRequired ? '' : '?'; // 非必填项前加问号
+                const comment = comments.join('\t').trim(); // 合并并清理注释
+
+                // 转换类型（integer转为number）
+                let convertedType = type === 'integer' ? 'number' : type;
+
+                // 构造输出行
+                output.push(`${key}${questionMark}: ${convertedType},    // ${comment}`);
+            });
+
+            // 过滤掉孤立的"string"行（如果存在的话，但根据您的输入，这一步可能是多余的）
+            // 由于我们的处理逻辑是基于每行都是一个完整的属性声明，所以这一步实际上不会执行到
+            // 但为了代码的完整性，我还是保留了这部分注释
+
+            // 将输出数组转换为字符串并显示在pre元素中
+            document.getElementById('outputText').textContent = output.join('\n');
+        }
+    </script>
+</body>
+
+</html>

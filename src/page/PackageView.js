@@ -109,6 +109,7 @@ export default function PackageView(props) {
     const [modleName, setModleName] = useState('')
     const [modlePermission, setModlePermission] = useState('')
     const [open, setOpen] = useState(false);
+    const [isUploadPremission, setUploadPremission] = useState(false)
 
     const showDrawer = () => {
         setOpen(true);
@@ -128,10 +129,13 @@ export default function PackageView(props) {
                 if (data) {
                     //注意要转换json
                     const config = JSON.parse(data)
-                    if (config.dir) {
-                        console.log('config-------------->' + config.dir)
-                        projDir = config.dir
-                        initDir(projDir)
+                    if (config) {
+                        if (config.dir) {
+                            console.log('config-------------->' + config.dir)
+                            projDir = config.dir
+                            initDir(projDir)
+                        }
+                        setUploadPremission(config.permission >= 4)
                     }
                 }
             })
@@ -525,7 +529,7 @@ export default function PackageView(props) {
                 fs.writeFileSync(buzDepJsonPath, JSON.stringify(filteredBuzDep));//todo 打包脚本读取该数组
             }
         }
-        let cmdStr = 'node ./node_modules/react-native/local-cli/cli.js bundle  --platform ' + platform
+        let cmdStr = 'node --openssl-legacy-provider ./node_modules/react-native/cli.js bundle  --platform ' + platform
             + ' --dev ' + env + ' --entry-file ' + entry + ' --bundle-output ' + bundleDir + path.sep + bundleName
             + ' --assets-dest ' + assetsDir + ' --config ' + projDir + path.sep + bundleConifgName;
         console.log(cmdStr)
@@ -1199,10 +1203,10 @@ export default function PackageView(props) {
                     WinExec.cmd(cmdStr)
                     message.info('复制安装包本地链接成功')
                 }}>复制安装包本地链接</Button>
-                <Button style={{ marginLeft: 15, marginRight: 10, marginTop: 10, width: 100, color: '#555' }} onClick={() => {
+                {isUploadPremission ? <Button style={{ marginLeft: 15, marginRight: 10, marginTop: 10, width: 100, color: '#555' }} onClick={() => {
                     // message.info('正在上传，请稍候...')
                     props.goUpload && props.goUpload()
-                }}>上传</Button>
+                }}>上传</Button> : null}
             </div>
             <div>{cmd}</div>
             <TextArea ref={logTextRef} value={cmdStr} rows={10} readonly={true} style={{ marginTop: 12, width: 1200 }} />

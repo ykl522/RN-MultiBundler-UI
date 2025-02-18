@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to JSON&Equality</title>
+    <style>
+        .output-with-border {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 其他样式 */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1,
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            box-sizing: border-box;
+            border: #ccc 1px solid;
+        }
+
+        button {
+            margin-top: 10px;
+        }
+
+        /* 添加按钮样式 */
+        .right-button {
+            display: inline-block;
+            background-color: #4CAF50;
+            /* Green */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            float: right;
+            margin-top: 10px;
+        }
+
+        /* 去除a标签的默认样式 */
+        .right-button-link {
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Excel to JSON&Equality</h1>
+
+    <!-- 多语言词条按钮 -->
+    <button class="right-button"
+        onclick="window.open('https://ztn.feishu.cn/sheets/shtcnCmogRKMGa58OY8v9Q2dOTg?sheet=rFH4tf', '_blank')">多语言词条</button>
+
+    <!-- ... 其他内容保持不变 ... -->
+
+</body>
+
+</html>
+
+
+<textarea id="excelData" placeholder="Paste your Excel data here (separated by tabs)"></textarea>
+
+<button onclick="convertExcelToJson()">Convert to JSON&Equality</button>
+
+<h2>JSON Output</h2>
+<textarea id="jsonOutput" class="output-with-border" readonly style="overflow-y: auto;"></textarea>
+
+<h2>Equality Output</h2>
+<textarea id="equalityOutput" class="output-with-border" readonly style="overflow-y: auto;"></textarea>
+
+<script>
+    function convertExcelToJson() {
+        const excelData = document.getElementById('excelData').value.trim();
+        if (!excelData) {
+            alert('No data to convert.');
+            return;
+        }
+
+        const lines = excelData.split('\n');
+        const jsonObj = {};
+        const equalityLines = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            const cells = lines[i].split('\t'); // 假设数据是制表符分隔的  
+            if (cells.length > 0) {
+                const key = cells[0].trim();
+                const value = cells[cells.length - 1].trim(); // 取最后一列  
+
+                // 假设数据已经正确格式化，这里不处理特殊字符  
+                if (key && value) {
+                    jsonObj[key] = value;
+                    equalityLines.push(`${key}=${value}`); // 不需要转义等号，这里假设值中不会包含等号  
+                }
+            }
+        }
+
+        // 使用JSON.stringify()生成JSON字符串  
+        const jsonOutput = JSON.stringify(jsonObj, null, 2);
+        document.getElementById('jsonOutput').value = jsonOutput;
+
+        // 设置等式输出  
+        document.getElementById('equalityOutput').value = equalityLines.join('\n');
+    }  
+</script>
+
+</body>
+
+</html>

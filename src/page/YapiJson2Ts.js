@@ -14,7 +14,7 @@ export default function YapiJson2Ts() {
         const ifm = document.getElementById("yapi2ts");
         let { scrollHeight, scrollWidth } = document.documentElement
         console.log(scrollHeight, scrollWidth)
-        ifm.height = `${scrollHeight}px`
+        ifm.height = `${scrollHeight - 100}px`
         ifm.width = `${scrollWidth}px`
     }
 
