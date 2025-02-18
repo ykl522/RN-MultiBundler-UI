@@ -29,6 +29,8 @@ class App extends React.Component {
 		this.state = {
 			activeKey: 'item-1',
 			showJJG: false,
+			projDir: workSpace,
+			permission: 1
 		}
 	}
 
@@ -36,16 +38,36 @@ class App extends React.Component {
 		ipcRenderer.send('close-loading-window', {
 			isClose: true
 		})
-		require('electron').ipcRenderer.on('JGGViewSwitch', (event) => {
+		ipcRenderer.on('JGGViewSwitch', (event) => {
 			console.log('=======JGGViewSwitch========')
-			this.setState({showJJG: !this.state.showJJG})
+			this.setState({ showJJG: !this.state.showJJG })
+		})
+		ipcRenderer.on('ExePath', (event, exePath) => {
+			console.log('ExePath------app.jsx-------->' + exePath)
+			//拼接好安装目录下的config.json
+			let configPath = `${exePath}/config.json`;
+			//使用fs读取文件内容
+			const fs = require('fs');
+			fs.readFile(configPath, 'utf-8', (err, data) => {
+				if (data) {
+					//注意要转换json
+					const config = JSON.parse(data)
+					console.log('config-------------->' + JSON.stringify(config))
+					if (config) {
+						console.log('config.dir-------------->' + config.dir)
+						this.state.projDir = config.dir || workSpace
+						this.state.permission = config.permission || 1
+						this.setState({ projDir: config.dir, permission: config.permission || 1 })
+					}
+				}
+			})
 		})
 	}
 
 	render() {
 		const items = [
 			{ label: '打包', key: 'item-1', children: <PackageView goUpload={() => { this.setState({ activeKey: 'item-4' }) }} /> },
-			{ label: '多语言', key: 'item-2', children: <LanguageView projDir={workSpace} /> },
+			{ label: '多语言', key: 'item-2', children: <LanguageView projDir={this.state.projDir} /> },
 			{ label: '二维码', key: 'item-3', children: <QRCodeView /> },
 			{ label: '接口', key: 'item-4', children: <ApiView /> },
 			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
@@ -59,10 +81,14 @@ class App extends React.Component {
 		if (this.state.showJJG) {
 			items.push({ label: '九宫格', key: 'item-11', children: <JGGView /> })
 		}
+		let newItems = []
+		if (this.state.permission) {
+			newItems = items.filter(item => Number(item.key.substring(item.key.indexOf('-') + 1)) <= this.state.permission)
+		}
 		return (
 			<Tabs
 				tabBarStyle={{ paddingLeft: 30, }}
-				items={items}
+				items={newItems}
 				activeKey={this.state.activeKey}
 				onChange={(activeKey) => {
 					this.setState({ activeKey })

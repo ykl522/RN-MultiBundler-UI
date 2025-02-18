@@ -18,8 +18,10 @@
 
 ## 工程目录读本地配置
 在程序入口exe同级目录下新建文件config.json 文件内容改为
+开发时这个目录在/node_modules/electron-prebuilt-compile/node_modules/electron/dist/
 {
-    "dir": "E:\\Git\\YunExpress"
+    "dir": "E:\\Git\\YunExpress",
+    "permission": 11
 }
 
 5、根据需要选择打包参数：

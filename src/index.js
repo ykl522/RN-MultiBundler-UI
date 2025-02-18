@@ -53,6 +53,65 @@ const createWindow = async () => {
       preload: path.resolve(__dirname, 'preload.js')
     }
   });
+  const exeDir = path.dirname(app.getPath('exe')).replace(/\\/g, '/')
+  const fs = require('fs');
+  let configObj = {}
+  if (fs.existsSync(`${exeDir}/config.json`)) {
+    const config = fs.readFileSync(`${exeDir}/config.json`)
+    console.log('config------index.js-------->' + config)
+    if (config) {
+      configObj = JSON.parse(config)
+    }
+  }
+  const helpMenu = configObj.permission ? [
+    {
+      label: '访问Electron官网', click: async () => {
+        const { shell } = require('electron')
+        await shell.openExternal('https://www.electronjs.org/docs/latest/api/app')
+      }
+    },
+    {
+      label: '访问工具Github地址', click: async () => {
+        const { shell } = require('electron')
+        await shell.openExternal('https://github.com/ykl522/RN-MultiBundler-UI')
+      }
+    },
+    {
+      label: '看板娘', click: async () => {
+        mainWindow.webContents.executeJavaScript(require('./external/autoload').kbn)
+      }
+    },
+    {
+      label: '九宫格', click: async () => {
+        mainWindow.webContents.send('JGGViewSwitch')
+      }
+    },
+    {
+      label: '关于', click: async () => {
+        const { dialog } = require('electron')
+        await dialog.showMessageBox({ title: "关于", message: '云途APP开发工具\n版本号：1.0.1', type: 'info' })
+      }
+    }
+  ] : [
+    {
+      label: '访问Electron官网', click: async () => {
+        const { shell } = require('electron')
+        await shell.openExternal('https://www.electronjs.org/docs/latest/api/app')
+      }
+    },
+    {
+      label: '访问工具Github地址', click: async () => {
+        const { shell } = require('electron')
+        await shell.openExternal('https://github.com/ykl522/RN-MultiBundler-UI')
+      }
+    },
+    {
+      label: '关于', click: async () => {
+        const { dialog } = require('electron')
+        await dialog.showMessageBox({ title: "关于", message: '云途APP开发工具\n版本号：1.0.1', type: 'info' })
+      }
+    }
+  ]
   // 菜单栏模板
   const menuBar = [
     {
@@ -113,36 +172,7 @@ const createWindow = async () => {
     },
     {
       label: '帮助',
-      submenu: [
-        {
-          label: '访问Electron官网', click: async () => {
-            const { shell } = require('electron')
-            await shell.openExternal('https://www.electronjs.org/docs/latest/api/app')
-          }
-        },
-        {
-          label: '访问工具Github地址', click: async () => {
-            const { shell } = require('electron')
-            await shell.openExternal('https://github.com/ykl522/RN-MultiBundler-UI')
-          }
-        },
-        {
-          label: '看板娘', click: async () => {
-            mainWindow.webContents.executeJavaScript(require('./external/autoload').kbn)
-          }
-        },
-        {
-          label: '九宫格', click: async () => {
-            mainWindow.webContents.send('JGGViewSwitch')
-          }
-        },
-        {
-          label: '关于', click: async () => {
-            const { dialog } = require('electron')
-            await dialog.showMessageBox({ title: "关于", message: '云途APP开发工具\n版本号：1.0.1', type: 'info' })
-          }
-        }
-      ]
+      submenu: helpMenu
     }
   ];
 

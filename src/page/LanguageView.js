@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react';
 const { exec } = require('child_process');
 const fs = require("fs");
-const { Button, Input, message, notification } = require('antd');
+const { Button, Input, message, notification, Drawer } = require('antd');
 
 export default function LanguageView(props) {
 
     const [outputTextArea, setOutputTextArea] = useState('')
     const [inputTextArea, setInputTextArea] = useState('')
     const [api, contextHolder] = notification.useNotification();
+    const [open, setOpen] = useState(false);
+    const showDrawer = () => {
+        setOpen(true);
+    };
+    const onClose = () => {
+        setOpen(false);
+    };
 
     const openNotification = (placement, des) => {
         api.info({
@@ -18,7 +25,9 @@ export default function LanguageView(props) {
     };
 
     useEffect(() => {
-        console.log(JSON.stringify(props))
+        const currentUrl = window.location.href; // 获取完整的 URL
+        console.log('Current URL: ' + currentUrl);
+        console.log('props: ' + JSON.stringify(props))
     }, [])
 
     const obj2Excel = (text) => {
@@ -339,10 +348,21 @@ export default function LanguageView(props) {
                     setOutputTextArea('')
                     setInputTextArea('')
                 }}>清空数据</Button>
+                <Button style={{ width: 160, marginLeft: 10 }} onClick={async () => {
+                    setOpen(true)
+                }}>表转JSON&Equality</Button>
             </div>
             <Input.TextArea onChange={(e) => {
                 setOutputTextArea(e.target.value)
             }} rows={18} value={outputTextArea} />
+            <Drawer title="转换工具" width={700} placement="right" onClose={onClose} open={open}>
+                <iframe
+                    style={{ width: '100%', height: '95%' }}
+                    id="yapi2ts"
+                    src={`file://${__dirname}/html/ExcelToJSON&Equality.html`}
+                    frameBorder="0"
+                    scrolling="no"></iframe>
+            </Drawer>
         </div >
     )
 }
