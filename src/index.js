@@ -142,6 +142,7 @@ const createWindow = async () => {
             )
           }
         },
+        { label: '设置', click: async () => { mainWindow.webContents.send('settings') } },
         { label: '退出', role: 'quit' }
       ]
     },

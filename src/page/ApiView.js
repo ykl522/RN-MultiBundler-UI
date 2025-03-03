@@ -19,11 +19,13 @@ export default function ApiView() {
     const [api, contextHolder] = notification.useNotification();
 
     const openNotification = (placement, des) => {
-        api.info({
-            message: `提示`,
-            description: des,
-            placement,
-        });
+        if (api) {
+            api.info({
+                message: `提示`,
+                description: des,
+                placement,
+            });
+        }
     };
 
     const uploadFileReq = (url, fileName, file) => {
@@ -62,6 +64,10 @@ export default function ApiView() {
                     setResponseResult('')
                     post(stateRef.current.url, stateRef.current.params ? JSON.parse(stateRef.current.params) : null).then((res) => {
                         setResponseResult(JSON.stringify(res, null, 2))
+                    }).catch((err) => {
+                        if (err && err.message) {
+                            openNotification('bottomRight', err.message)
+                        }
                     })
                 }}>POST</Button>
                 <Button style={{ width: 100, marginLeft: 20 }} onClick={() => {
@@ -71,6 +77,10 @@ export default function ApiView() {
                     setResponseResult('')
                     get(stateRef.current.url).then((res) => {
                         setResponseResult(JSON.stringify(res, null, 2))
+                    }).catch((err) => {
+                        if (err && err.message) {
+                            openNotification('bottomRight', err.message)
+                        }
                     })
                 }}>GET</Button>
                 <Button style={{ width: 100, marginLeft: 20 }} onClick={() => {

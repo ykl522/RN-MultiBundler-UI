@@ -36,7 +36,7 @@ export default function JGGView() {
     const [isLoading, setIsLoading] = useState(false)
     const [showSelector, setShowSelector] = useState()
 
-    const getRandomData = () => {
+    const getRandomData = async () => {
         const randomData = JGG.randomInit()
         for (let rowsIndex in randomData) {
             let rows = randomData[rowsIndex]
@@ -45,18 +45,28 @@ export default function JGGView() {
                 boardRef.current[rowsIndex][index] = rows[index]
             }
         }
-        const newBoard = JGG.solveSudoku(cloneDeep(randomData))
+        // 先解一次 如果有解则返回
+        const newBoard = await new Promise((resolve) => {
+            // 随机生成一个数独要一点时间加上setTimeout，不然会阻塞UI
+            const to = setTimeout(() => {
+                const newRandomBoard = JGG.solveSudoku(cloneDeep(randomData))
+                resolve(newRandomBoard); // 假设每个数字都乘以2
+                clearTimeout(to)
+            }, 0)
+        })
         console.log('newBoard--->', newBoard)
+        // 如果无解则再次随机
         if (newBoard && newBoard.toString().includes('.')) {
-            return getRandomData()
+            console.log('===无解再次随机===')
+            return await getRandomData()
         } else {
-            newBoardRef.current = newBoard
+            console.log('===随机成功===')
             return cloneDeep(randomData)
         }
     }
 
     useEffect(() => {
-        setIsLoading(false)
+        // setIsLoading(false)
     }, [board])
 
     return (<div style={{ display: 'flex', flexDirection: 'column', paddingLeft: 30, paddingRight: 30 }}>
@@ -64,9 +74,14 @@ export default function JGGView() {
             <Button
                 style={{ width: 100, marginTop: 15, marginBottom: 15, marginRight: 15 }}
                 loading={isLoading}
-                onClick={() => {
+                onClick={async () => {
                     setIsLoading(true)
-                    setBoard(getRandomData())
+                    try {
+                        boardRef.current = await getRandomData()
+                        setBoard(cloneDeep(boardRef.current))
+                    } finally {
+                        setIsLoading(false)
+                    }
                 }}
             >随机</Button>
             <Button
@@ -79,12 +94,9 @@ export default function JGGView() {
             <Button
                 style={{ width: 100, marginTop: 15, marginBottom: 15, marginRight: 15 }}
                 onClick={() => {
-                    if (newBoardRef.current) {
-                        setBoard(cloneDeep(newBoardRef.current))
-                    } else {
-                        const newBoard = JGG.solveSudoku(board)
-                        setBoard(cloneDeep(newBoard))
-                    }
+                    const newBoard = JGG.solveSudoku(cloneDeep(boardRef.current))
+                    console.log('newBoard--->', newBoard)
+                    setBoard(cloneDeep(newBoard))
                 }}
             >解答</Button>
         </div>

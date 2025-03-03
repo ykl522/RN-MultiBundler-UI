@@ -135,7 +135,9 @@ export default function PackageView(props) {
                             projDir = config.dir
                             initDir(projDir)
                         }
-                        setUploadPremission(config.permission >= 4)
+                        if (config.permission) {
+                            setUploadPremission(Number(config.permission) >= 4)
+                        }
                     }
                 }
             })
@@ -529,7 +531,7 @@ export default function PackageView(props) {
                 fs.writeFileSync(buzDepJsonPath, JSON.stringify(filteredBuzDep));//todo 打包脚本读取该数组
             }
         }
-        let cmdStr = 'node --openssl-legacy-provider ./node_modules/react-native/cli.js bundle  --platform ' + platform
+        let cmdStr = `node ./node_modules/react-native/cli.js bundle  --platform ` + platform
             + ' --dev ' + env + ' --entry-file ' + entry + ' --bundle-output ' + bundleDir + path.sep + bundleName
             + ' --assets-dest ' + assetsDir + ' --config ' + projDir + path.sep + bundleConifgName;
         console.log(cmdStr)
