@@ -58,7 +58,8 @@ body {
 }
 
 
-.input-container, .output-container {
+.input-container,
+.output-container {
     padding: 20px;
 }
 
@@ -72,4 +73,19 @@ body {
     overflow-y: scroll;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 16px;
+}
+
+#toast {
+    position: fixed;
+    left: 50%;
+    /* 将左边定位到页面中间 */
+    transform: translateX(-50%);
+    /* 向左移动自身宽度的一半 */
+    top: 65px;
+    /* 保留底部距离 */
+    background: #333;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
 }

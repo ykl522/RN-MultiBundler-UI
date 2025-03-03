@@ -5,6 +5,7 @@
  * @LastEditTime: 2023-03-21 16:03:51
  * @FilePath: \RN-MultiBundler-UI\src\main.js
  */
+
 const React = require('react');
 const ReactDOM = require('react-dom');
 const { AppContainer } = require('react-hot-loader');

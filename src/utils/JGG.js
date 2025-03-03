@@ -203,8 +203,8 @@ export default class JGG {
     static randomInit() {
         let n = random(20, 35)
         let m = this.fill(n)
-        console.log(m)
-        console.log(this.toStr(m))
+        // console.log(m)
+        // console.log(this.toStr(m))
         return m
     }
 

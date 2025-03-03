@@ -21,7 +21,8 @@
 开发时这个目录在/node_modules/electron-prebuilt-compile/node_modules/electron/dist/
 {
     "dir": "E:\\Git\\YunExpress",
-    "permission": 11
+    "permission": 12,
+    "deepSeekKey": "xxxx"
 }
 
 5、根据需要选择打包参数：

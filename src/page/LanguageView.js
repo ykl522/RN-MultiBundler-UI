@@ -248,6 +248,9 @@ export default function LanguageView(props) {
                         openNotification('bottomRight', '请先转换要同步的中文词条JSON对象为JSON,并且输入其它语言词条JSON对象')
                     }
                 }}>查找多出Key</Button>
+                <Button style={{ width: 160, marginLeft: 10 }} onClick={async () => {
+                    setOpen(true)
+                }}>表转JSON&Equality</Button>
             </div>
             <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'row' }}>
                 <Button style={{ width: 100 }} onClick={() => {
@@ -344,13 +347,14 @@ export default function LanguageView(props) {
                     const { shell } = require('electron')
                     await shell.openExternal('https://ztn.feishu.cn/wiki/wikcnlbOqQs7Vz21ezzODatbIGd?sheet=5cf23f')
                 }}>跳转在线文档</Button>
+                <Button style={{ width: 150, marginLeft: 10 }} onClick={async () => {
+                    const { shell } = require('electron')
+                    await shell.openExternal('https://ztn.feishu.cn/wiki/QokYw7IY7i58nekio1sc5dnunOb?table=tblVtbqBj9cDTzkk&view=vewFgtT4on')
+                }}>跳转DeepSeek翻译</Button>
                 <Button style={{ width: 100, marginLeft: 10 }} onClick={async () => {
                     setOutputTextArea('')
                     setInputTextArea('')
                 }}>清空数据</Button>
-                <Button style={{ width: 160, marginLeft: 10 }} onClick={async () => {
-                    setOpen(true)
-                }}>表转JSON&Equality</Button>
             </div>
             <Input.TextArea onChange={(e) => {
                 setOutputTextArea(e.target.value)

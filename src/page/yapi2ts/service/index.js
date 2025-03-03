@@ -54,15 +54,18 @@ function addClickOnOutputDiv() {
     const output = getOutputTextArea()
     output.onclick = async () => {
         await navigator.clipboard.writeText(output.innerText);
-        // message.info('转换内容已复制到粘贴板');
-        showToast()
+        showToast('转换内容已复制到粘贴板')
     }
 }
 
-function showToast() {
+/**
+ * 显示提示信息
+ * @param {string} text 
+ */
+function showToast(text) {
     const toast = document.getElementById('toast');
     toast.style.display = 'block';
-    toast.innerHTML = '转换内容已复制到粘贴板';
+    toast.innerHTML = text;
 
     setTimeout(() => {
         toast.style.display = 'none';
