@@ -1,8 +1,8 @@
 /*
  * 打包 界面   
- * @Author: 袁康乐 yuankangle@yunexpress.cn
+ * @Author: 袁康乐 yuankangle@gmail.com
  * @Date: 2022-10-21 16:37:25
- * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2024-07-11 15:17:21
  * @FilePath: \RN-MultiBundler-UI\src\page\PackageView.js
  * @Description: 打包工具
