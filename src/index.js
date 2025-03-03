@@ -1,10 +1,10 @@
 /*
- * @Author: 袁康乐 yuankangle@gmail.com
+ * @Author: 康乐 yuankangle@gmail.com
  * @Date: 2021-07-02 14:48:11
  * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2024-05-28 09:41:46
  * @FilePath: \RN-MultiBundler-UI\src\index.js
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: 入口
  */
 const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
 const { REACT_DEVELOPER_TOOLS } = require('electron-devtools-installer');
