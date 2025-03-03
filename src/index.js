@@ -63,7 +63,7 @@ const createWindow = async () => {
       configObj = JSON.parse(config)
     }
   }
-  const helpMenu = configObj.permission ? [
+  const helpMenu = [
     {
       label: '访问Electron官网', click: async () => {
         const { shell } = require('electron')
@@ -92,26 +92,7 @@ const createWindow = async () => {
         await dialog.showMessageBox({ title: "关于", message: '云途APP开发工具\n版本号：1.0.2', type: 'info' })
       }
     }
-  ] : [
-    {
-      label: '访问Electron官网', click: async () => {
-        const { shell } = require('electron')
-        await shell.openExternal('https://www.electronjs.org/docs/latest/api/app')
-      }
-    },
-    {
-      label: '访问工具Github地址', click: async () => {
-        const { shell } = require('electron')
-        await shell.openExternal('https://github.com/ykl522/RN-MultiBundler-UI')
-      }
-    },
-    {
-      label: '关于', click: async () => {
-        const { dialog } = require('electron')
-        await dialog.showMessageBox({ title: "关于", message: '云途APP开发工具\n版本号：1.0.1', type: 'info' })
-      }
-    }
-  ]
+  ].filter((item) => configObj.permission ? true : (item.label !== '看板娘' && item.label !== '九宫格'))
   // 菜单栏模板
   const menuBar = [
     {
@@ -144,7 +125,7 @@ const createWindow = async () => {
         },
         { label: '设置', click: async () => { mainWindow.webContents.send('settings') } },
         { label: '退出', role: 'quit' }
-      ]
+      ].filter((item) => configObj.permission ? true : item.label !== '设置'),
     },
     {
       label: '预定义功能',
