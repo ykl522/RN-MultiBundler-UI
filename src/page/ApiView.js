@@ -1,18 +1,18 @@
 /*
- * @Author: 袁康乐 yuankangle@yunexpress.cn
+ * @Author: 袁康乐 yuankangle@gmail.com
  * @Date: 2022-10-27 09:55:52
- * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2023-02-27 16:55:43
  * @FilePath: \RN-MultiBundler-UI\src\page\ApiView.js
  * @Description: Api调试
  */
 import { useState, useEffect, useRef } from 'react';
 const { Button, Input, notification } = require('antd');
-import { post, get, uploadFile, getUploadUrl } from '../net/requestHttp';
+import { post, get, uploadFile, getUploadUrl } from '../net/HttpRequest';
 const { remote } = require("electron");
 import { workSpace } from '../config'
 
-export default function ApiView() {
+export default function ApiView(props) {
     const stateRef = useRef({ url: '', params: '' })
     const [responseResult, setResponseResult] = useState('')
     const [progress, setProgress] = useState('')
@@ -38,7 +38,7 @@ export default function ApiView() {
             setResponseResult(JSON.stringify(res, null, 2))
         }).catch((err) => {
             if (url && !url.includes('APP')) {
-                let url = getUploadUrl(fileName, 'APP')
+                let url = getUploadUrl(props.uploadUrl, fileName, 'APP')
                 uploadFileReq(url, fileName, file)
             } else {
                 setResponseResult(JSON.stringify(err, null, 2))
@@ -99,7 +99,7 @@ export default function ApiView() {
                             if (filePath) {
                                 const file = filePath[0] + '';
                                 let fileName = file.substring(file.lastIndexOf('\\') + 1)
-                                let url = getUploadUrl(fileName)
+                                let url = getUploadUrl(props.uploadUrl, fileName)
                                 uploadFileReq(url, fileName, file)
                                 // uploadFile(url, fileName, file, (progress) => {
                                 //     setProgress((progress * 100).toFixed(0) + '%')

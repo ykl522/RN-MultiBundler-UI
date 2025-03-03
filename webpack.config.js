@@ -1,12 +1,12 @@
 /**
- * @Author: 康乐 yuankangle@yunexpress.cn
+ * @Author: 康乐 yuankangle@gmail.com
  * @Date: 2022-11-03 14:37:26
- * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2023-03-02 15:29:27
  * @FilePath: \ops_pdad:\Git\RN-MultiBundler-UI\webpack.config.js
  * @Description: 
  * @
- * @Copyright (c) 2023 by 康乐 yuankangle@yunexpress.cn, All Rights Reserved. 
+ * @Copyright (c) 2023 by 康乐 yuankangle@gmail.com, All Rights Reserved. 
  */
 module.exports = {
     module: { //所有第三方模块的配置规则，只要webpack处理不了的，都会来这里找

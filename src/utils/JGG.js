@@ -1,7 +1,7 @@
 /*
- * @Author: 康乐 yuankangle@yunexpress.cn
+ * @Author: 康乐 yuankangle@gmail.com
  * @Date: 2023-08-24 16:07:55
- * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2023-08-25 11:20:51
  * @FilePath: \RN-MultiBundler-UI\src\utils\JGG.js
  * @Description: 九宫格算法

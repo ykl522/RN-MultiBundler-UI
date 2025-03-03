@@ -1,7 +1,7 @@
 /*
- * @Author: 康乐 yuankangle@yunexpress.cn
+ * @Author: 康乐 yuankangle@gmail.com
  * @Date: 2023-01-30 17:37:10
- * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2023-04-12 17:14:38
  * @FilePath: \RN-MultiBundler-UI\src\page\ProjectView.js
  * @Description: 项目管理

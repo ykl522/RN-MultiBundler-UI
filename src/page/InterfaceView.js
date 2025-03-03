@@ -1,7 +1,7 @@
 /*
- * @Author: 康乐 yuankangle@yunexpress.cn
+ * @Author: 康乐 yuankangle@gmail.com
  * @Date: 2023-09-04 15:15:47
- * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2024-06-07 10:39:44
  * @FilePath: \RN-MultiBundler-UI\src\page\InterfaceView.js
  * @Description: 接口
@@ -68,9 +68,9 @@ export default function InterfaceView() {
     const getAPiName = (lines) => {
         for (const index in lines) {
             const line = lines[index]
-            if (line && (line.includes('httpPostOPA') 
-                || line.includes('httpPostOps') 
-                || line.includes('httpFetchOPA') 
+            if (line && (line.includes('httpPostOPA')
+                || line.includes('httpPostOps')
+                || line.includes('httpFetchOPA')
                 || line.includes('httpGetOps')
                 || line.includes('export const')
             )) {

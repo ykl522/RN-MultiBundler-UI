@@ -1,7 +1,7 @@
 /*
- * @Author: 康乐 yuankangle@yunexpress.cn
+ * @Author: 康乐 yuankangle@gmail.com
  * @Date: 2023-09-04 15:15:47
- * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2024-06-07 10:39:44
  * @FilePath: \RN-MultiBundler-UI\src\page\InterfaceView.js
  * @Description: 接口
@@ -10,7 +10,7 @@
 import { Button, Input, notification } from 'antd';
 import { useState, useEffect, useRef } from 'react';
 import WinExec from '../utils/WinExec';
-import { post } from '../net/requestHttp';
+import { post } from '../net/HttpRequest';
 
 
 export default function InterfaceView(props) {

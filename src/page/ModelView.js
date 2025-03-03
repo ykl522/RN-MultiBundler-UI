@@ -1,7 +1,7 @@
 /*
- * @Author: 康乐 yuankangle@yunexpress.cn
+ * @Author: 康乐 yuankangle@gmail.com
  * @Date: 2023-03-17 15:44:57
- * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2023-03-17 15:54:34
  * @FilePath: \RN-MultiBundler-UI\src\page\Model.js
  * @Description: 模板

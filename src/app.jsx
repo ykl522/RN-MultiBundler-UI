@@ -1,7 +1,7 @@
 /*
- * @Author: 袁康乐 yuankangle@yunexpress.cn
+ * @Author: 袁康乐 yuankangle@gmail.com
  * @Date: 2021-07-02 14:48:11
- * @LastEditors: 康乐 yuankangle@yunexpress.cn
+ * @LastEditors: 康乐 yuankangle@gmail.com
  * @LastEditTime: 2024-05-28 09:44:59
  * @FilePath: \ops_pdad:\Git\RN-MultiBundler-UI\src\app.jsx
  * @Description: 首页
@@ -23,6 +23,7 @@ import JGGView from './page/JGGView';
 import InterfaceView from './page/InterfaceView';
 import AIView from './page/AIView';
 import { Modal, Tabs, Table, Button, Input, Typography, Tooltip } from 'antd';
+import { uploadFile } from './net/HttpRequest';
 class App extends React.Component {
 	constructor(props) {
 		super(props);
@@ -35,10 +36,12 @@ class App extends React.Component {
 			projDir: workSpace,
 			permission: '1',
 			deepSeekKey: '',
+			uploadUrl: '',
 			dataSource: [
 				{ key: 'projDir', value: workSpace, isDefault: true, tip: '项目目录' },
 				{ key: 'permission', value: 1, isDefault: true, tip: '权限' },
-				{ key: 'deepSeekKey', value: '', isDefault: true, tip: 'DeepSeek API Key' }
+				{ key: 'deepSeekKey', value: '', isDefault: true, tip: 'DeepSeek API Key' },
+				{ key: 'uploadUrl', value: '', isDefault: true, tip: '上传接口地址' }
 			]
 		}
 		this.configPath = ''
@@ -82,7 +85,8 @@ class App extends React.Component {
 						this.state.dataSource = [
 							{ key: 'projDir', value: config.dir || '', isDefault: true, tip: '项目目录' },
 							{ key: 'permission', value: config.permission || 1, isDefault: true, tip: '权限' },
-							{ key: 'deepSeekKey', value: config.deepSeekKey || '', isDefault: true, tip: 'DeepSeek API Key' }
+							{ key: 'deepSeekKey', value: config.deepSeekKey || '', isDefault: true, tip: 'DeepSeek API Key' },
+							{ key: 'uploadUrl', value: config.uploadUrl || '', isDefault: true, tip: '上传接口地址' }
 						]
 						this.setState({
 							projDir: config.dir || '',
@@ -101,7 +105,7 @@ class App extends React.Component {
 			{ label: '打包', key: 'item-1', children: <PackageView goUpload={() => { this.setState({ activeKey: 'item-4' }) }} /> },
 			{ label: '多语言', key: 'item-2', children: <LanguageView projDir={this.state.projDir} /> },
 			{ label: '二维码', key: 'item-3', children: <QRCodeView /> },
-			{ label: '接口', key: 'item-4', children: <ApiView /> },
+			{ label: '接口', key: 'item-4', children: <ApiView uploadUrl={this.state.uploadUrl} /> },
 			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
 			{ label: 'MD5', key: 'item-6', children: <Md5View /> },
 			{ label: 'APK', key: 'item-7', children: <ApkView tabChangeKey={this.state.activeKey} /> },
@@ -147,7 +151,8 @@ class App extends React.Component {
 									this.setState({
 										projDir: result.projDir,
 										permission: result.permission,
-										deepSeekKey: result.deepSeekKey
+										deepSeekKey: result.deepSeekKey,
+										uploadUrl: result.uploadUrl
 									})
 								}
 							});

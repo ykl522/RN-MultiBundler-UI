@@ -20,7 +20,7 @@
 在程序入口exe同级目录下新建文件config.json 文件内容改为
 开发时这个目录在/node_modules/electron-prebuilt-compile/node_modules/electron/dist/
 {
-    "dir": "E:\\Git\\YunExpress",
+    "dir": "E:\\Git\\new_pda",
     "permission": 12,
     "deepSeekKey": "xxxx"
 }
