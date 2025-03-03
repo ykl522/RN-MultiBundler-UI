@@ -89,7 +89,7 @@ const createWindow = async () => {
     {
       label: '关于', click: async () => {
         const { dialog } = require('electron')
-        await dialog.showMessageBox({ title: "关于", message: '云途APP开发工具\n版本号：1.0.1', type: 'info' })
+        await dialog.showMessageBox({ title: "关于", message: '云途APP开发工具\n版本号：1.0.2', type: 'info' })
       }
     }
   ] : [
