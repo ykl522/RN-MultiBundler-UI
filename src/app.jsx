@@ -82,6 +82,7 @@ class App extends React.Component {
 						this.state.projDir = config.dir || workSpace
 						this.state.permission = config.permission || 1
 						this.state.deepSeekKey = config.deepSeekKey || ''
+						this.state.uploadUrl = config.uploadUrl || ''
 						this.state.dataSource = [
 							{ key: 'projDir', value: config.dir || '', isDefault: true, tip: '项目目录' },
 							{ key: 'permission', value: config.permission || 1, isDefault: true, tip: '权限' },
@@ -92,6 +93,7 @@ class App extends React.Component {
 							projDir: config.dir || '',
 							permission: config.permission || 1,
 							deepSeekKey: config.deepSeekKey || '',
+							uploadUrl: config.uploadUrl || '',
 							dataSource: this.state.dataSource
 						})
 					}
