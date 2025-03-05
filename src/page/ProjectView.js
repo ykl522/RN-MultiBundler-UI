@@ -129,6 +129,15 @@ export default function ProjectView(props) {
         openNotification(`复制${isRelease ? '线上' : '线下'}安装包的本地下载链接成功`)
     }
 
+    // 判断是否是RN项目
+    const isRNProject = (projectDirectory) => {
+        const fs = require('fs');
+        if (fs.existsSync(projectDirectory + '\\package.json')) {
+            return true
+        }
+        return false
+    }
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: 30, paddingRight: 30 }}>
             {modalContextHolder}
@@ -306,14 +315,18 @@ export default function ProjectView(props) {
                 }}>打开目录文件夹</Button>
                 <Button style={{ width: 140, marginTop: 0, marginLeft: 15 }} onClick={() => {
                     verify(project => {
-                        WinExec.cmd('package.json', project.directory).catch((msg) => {
-                            openNotification('执行出错: ' + msg)
-                        })
+                        if (isRNProject(project.directory)) {
+                            WinExec.cmd('package.json', project.directory).catch((msg) => {
+                                openNotification('执行出错: ' + msg)
+                            })
+                        } else {
+                            openNotification('没有找到package.json')
+                        }
                     })
                 }}>打开package.json</Button>
                 <Button style={{ width: 160, marginTop: 0, marginLeft: 15 }} onClick={() => {
                     verify(project => {
-                        WinExec.cmd('build.gradle', project.directory + '\\android\\app\\').catch((msg) => {
+                        WinExec.cmd('build.gradle', project.directory + `${isRNProject(project.directory) ? '\\android' : ''}\\app\\`).catch((msg) => {
                             openNotification('执行出错: ' + msg)
                         })
                     })
@@ -338,7 +351,7 @@ export default function ProjectView(props) {
                     onClick={() => {
                         setLoading(true)
                         verify(project => {
-                            WinExec.cmd('chcp 65001 && gradlew assembleDebug', project.directory + '\\android\\', null, (isSuccess) => {
+                            WinExec.cmd('chcp 65001 && gradlew assembleDebug', project.directory + `${isRNProject(project.directory) ? '\\android\\' : ''}`, null, (isSuccess) => {
                                 setLoading(false)
                                 if (isSuccess) {
                                     openNotification('打包成功')
@@ -356,7 +369,7 @@ export default function ProjectView(props) {
                     onClick={() => {
                         setLoading(true)
                         verify(project => {
-                            WinExec.cmd('chcp 65001 && gradlew assembleRelease', project.directory + '\\android\\', null, (isSuccess) => {
+                            WinExec.cmd('chcp 65001 && gradlew assembleRelease', project.directory + `${isRNProject(project.directory) ? '\\android\\' : ''}`, null, (isSuccess) => {
                                 setLoading(false)
                                 if (isSuccess) {
                                     openNotification('打包成功')
