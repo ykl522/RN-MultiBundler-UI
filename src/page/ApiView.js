@@ -17,6 +17,8 @@ export default function ApiView(props) {
     const [responseResult, setResponseResult] = useState('')
     const [progress, setProgress] = useState('')
     const [api, contextHolder] = notification.useNotification();
+    const requestTime = useRef(0)
+    const [loadingTime, setLoadingTime] = useState('')
 
     const openNotification = (placement, des) => {
         if (api) {
@@ -29,9 +31,16 @@ export default function ApiView(props) {
     };
 
     const uploadFileReq = (url, fileName, file) => {
+        if (!file) {
+            openNotification('bottomRight', '请选择文件')
+            return
+        }
+        requestTime.current = new Date().getTime()
+        setLoadingTime(0)
         uploadFile(url, fileName, file, (progress) => {
             setProgress((progress * 100).toFixed(0) + '%')
             if (progress == 1) {
+                setLoadingTime(new Date().getTime() - requestTime.current)
                 openNotification('bottomRight', '上传完成')
             }
         }).then((res) => {
@@ -57,12 +66,16 @@ export default function ApiView(props) {
                 stateRef.current.params = e.target.value
             }} />
             <div style={{ marginTop: 15 }}>
-                <Button style={{ width: 100 }} onClick={() => {
+                <Button style={{ width: 100 }} loading={loadingTime === 0} onClick={() => {
                     if (!stateRef.current.url) {
                         openNotification('bottomRight', '请输入接口地址')
+                        return
                     }
                     setResponseResult('')
+                    setLoadingTime(0)
+                    requestTime.current = new Date().getTime()
                     post(stateRef.current.url, stateRef.current.params ? JSON.parse(stateRef.current.params) : null).then((res) => {
+                        setLoadingTime(new Date().getTime() - requestTime.current)
                         setResponseResult(JSON.stringify(res, null, 2))
                     }).catch((err) => {
                         if (err && err.message) {
@@ -70,12 +83,16 @@ export default function ApiView(props) {
                         }
                     })
                 }}>POST</Button>
-                <Button style={{ width: 100, marginLeft: 20 }} onClick={() => {
+                <Button style={{ width: 100, marginLeft: 20 }} loading={loadingTime === 0} onClick={() => {
                     if (!stateRef.current.url) {
                         openNotification('bottomRight', '请输入接口地址')
+                        return
                     }
                     setResponseResult('')
+                    setLoadingTime(0)
+                    requestTime.current = new Date().getTime()
                     get(stateRef.current.url).then((res) => {
+                        setLoadingTime(new Date().getTime() - requestTime.current)
                         setResponseResult(JSON.stringify(res, null, 2))
                     }).catch((err) => {
                         if (err && err.message) {
@@ -83,7 +100,7 @@ export default function ApiView(props) {
                         }
                     })
                 }}>GET</Button>
-                <Button style={{ width: 100, marginLeft: 20 }} onClick={() => {
+                <Button style={{ width: 100, marginLeft: 20 }} loading={loadingTime === 0} onClick={() => {
                     setResponseResult('')
                     setProgress('')
                     remote.dialog.showOpenDialog(
@@ -119,6 +136,7 @@ export default function ApiView(props) {
                     )
                 }}>{progress || 'Upload'}</Button>
             </div>
+            <div style={{ marginTop: 10 }}>请求总耗时(毫秒)：{loadingTime || ''}</div>
             <Input.TextArea rows={20} style={{ marginTop: 10 }} value={responseResult} />
         </div>
     )
