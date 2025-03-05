@@ -52,9 +52,15 @@ export default function InterfaceView() {
      * @param {string} include 
      */
     const getMothed = (line, include) => {
-        const first = line.substring(line.indexOf('=>'))
-        const second = first.substring(first.indexOf(include) + 1)
-        const result = second.substring(0, second.indexOf(include))
+        let first = ''
+        if (line.includes('=>')) {
+            first = line.substring(line.indexOf('=>'))
+        } else {
+            first = line.substring(line.indexOf(include))
+        }
+        const second = first.substring(first.indexOf(include) + 2)
+        const result = second.substring(0, second.indexOf(include[1]))
+        console.log('result===>', result)
         if (result.includes('?')) {
             return result.substring(0, result.indexOf('?'))
         }
@@ -68,20 +74,21 @@ export default function InterfaceView() {
     const getAPiName = (lines) => {
         for (const index in lines) {
             const line = lines[index]
-            if (line && (line.includes('httpPostOPA')
-                || line.includes('httpPostOps')
-                || line.includes('httpFetchOPA')
-                || line.includes('httpGetOps')
-                || line.includes('export const')
+            if (line && (line.includes('(`/')
+                || line.includes(`('/`)
+                || line.includes(`("/`)
+                || line.includes(`>("`)
+                || line.includes(`>('`)
+                || line.includes('>(`')
             )) {
-                if (line.includes("`")) {
-                    return getMothed(line, "`")
+                if (line.includes("(`")) {
+                    return getMothed(line, "(`")
                 }
-                if (line.includes("'")) {
-                    return getMothed(line, "'")
+                if (line.includes("('")) {
+                    return getMothed(line, "('")
                 }
-                if (line.includes(`"`)) {
-                    return getMothed(line, `"`)
+                if (line.includes(`("`)) {
+                    return getMothed(line, `("`)
                 }
             }
         }
@@ -91,7 +98,7 @@ export default function InterfaceView() {
         <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: 30, paddingRight: 30 }}>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
 
-                <Input.TextArea placeholder={'请输入要转换的内容'} onChange={(e) => {
+                <Input.TextArea placeholder={'请粘贴要转换的代码'} onChange={(e) => {
                     setInputTextArea(e.target.value)
                 }} rows={20} value={inputTextArea} />
                 <Input.TextArea placeholder={'此处输出转换的内容'} onChange={(e) => {
@@ -99,10 +106,19 @@ export default function InterfaceView() {
                 }} rows={20} value={outputTextArea} />
             </div>
             <Button
-                style={{ width: 100, marginTop: 15, marginBottom: 15, marginRight: 15 }}
+                style={{ width: 160, marginTop: 15, marginBottom: 15, marginRight: 15 }}
                 onClick={() => {
+                    setOutputTextArea('')
                     if (inputTextArea) {
-                        const apis = `${inputTextArea}`.split('api.')
+                        let apis = []
+                        if (inputTextArea.includes('api.')) {
+                            apis = `${inputTextArea}`.split('api.')
+                        } else if (inputTextArea.includes('export ')) {
+                            apis = `${inputTextArea}`.split('export ')
+                        } else if (inputTextArea.includes('return ')) {
+                            apis = `${inputTextArea}`.split('return ')
+                        }
+                        console.log('apis个数===>', apis.length - 1)
                         let excelStr = ''
                         for (const index in apis) {
                             const api = apis[index]
@@ -118,12 +134,14 @@ export default function InterfaceView() {
                             console.log(excelStr)
                             // let cmdStr = `CHCP 65001 && (echo|set/p=${excelStr})|clip`
                             // WinExec.cmd(cmdStr)
-                            openNotification("转换成功")
+                            openNotification("提取成功")
                             setOutputTextArea(excelStr)
+                        } else {
+                            openNotification("提取失败")
                         }
                     }
                 }}
-            >转换</Button>
+            >代码中接口名提取</Button>
             {contextHolder}
         </div>
     )
