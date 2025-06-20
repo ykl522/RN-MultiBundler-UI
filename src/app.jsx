@@ -38,6 +38,7 @@ class App extends React.Component {
 			deepSeekKey: '',
 			uploadUrl: '',
 			downloadPath: '',
+			downloadMd5Data: {},
 			dataSource: [
 				{ key: 'projDir', value: workSpace, isDefault: true, tip: '项目目录' },
 				{ key: 'permission', value: 1, isDefault: true, tip: '权限' },
@@ -88,6 +89,7 @@ class App extends React.Component {
 						this.state.permission = config.permission || 1
 						this.state.deepSeekKey = config.deepSeekKey || ''
 						this.state.uploadUrl = config.uploadUrl || ''
+						this.state.downloadMd5Data = config.downloadMd5Data || {}
 						this.state.dataSource = [
 							{ key: 'projDir', value: config.dir || '', isDefault: true, tip: '项目目录' },
 							{ key: 'permission', value: config.permission || 1, isDefault: true, tip: '权限' },
@@ -114,7 +116,7 @@ class App extends React.Component {
 			{ label: '二维码', key: 'item-3', children: <QRCodeView /> },
 			{ label: '接口', key: 'item-4', children: <ApiView uploadUrl={this.state.uploadUrl} /> },
 			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
-			{ label: 'MD5', key: 'item-6', children: <FileMd5View downloadPath={this.state.downloadPath} /> },
+			{ label: 'MD5', key: 'item-6', children: <FileMd5View downloadPath={this.state.downloadPath} downloadMd5Data={this.state.downloadMd5Data} /> },
 			{ label: 'APK', key: 'item-7', children: <ApkView tabChangeKey={this.state.activeKey} /> },
 			{ label: '项目管理', key: 'item-8', children: <ProjectView tabChangeKey={this.state.activeKey} /> },
 			// { label: '模板', key: 'item-9', children: <ModelView /> },

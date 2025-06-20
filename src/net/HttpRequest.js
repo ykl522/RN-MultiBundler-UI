@@ -84,10 +84,19 @@ export const downloadFile = async (url, progressCallback, dataCallback) => {
         responseType: 'arraybuffer',
         onDownloadProgress: (progressEvent) => {
             const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            console.log(`下载进度: ${percent}%`);
+            // console.log(`下载进度: ${percent}%`);
             if (progressCallback) {
                 progressCallback(percent);
             }
+        },
+        headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        },
+        params: {
+            // 添加额外的随机参数
+            rand: Math.random().toString(36).substring(7)
         }
     });
     const arraybuffer = response.data;

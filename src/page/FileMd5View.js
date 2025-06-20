@@ -17,8 +17,7 @@ import Draggable from 'react-draggable';
 export default function Md5View(props) {
 
     const [fileList, setFileList] = useState([])
-    const [urlList, setUrlList] = useState([
-    ])
+    const [urlList, setUrlList] = useState(props.downloadMd5Data || [])
     const [visible, setVisible] = useState(false)
     const [bounds, setBounds] = useState({ left: 0, top: 0, bottom: 0, right: 0 });
     const [disabled, setDisabled] = useState(true);
@@ -145,7 +144,12 @@ export default function Md5View(props) {
             dataIndex: 'md5',
             width: 315,
             key: 'md5',
-            render: (data) => <a style={{ width: 315 }}>{data}</a>
+            render: (data, columnData) => (
+                <div style={{ width: 315, height: '100%' }}>
+                    <div style={{ position: 'absolute', width: `${columnData.progress || 0}%`, height: '100%', left: 0, top: 0, backgroundColor: '#00ff0045' }} />
+                    <a style={{ width: 315, color: '#f00', fontWeight: 'bold' }}>{data}</a>
+                </div>
+            )
         }, {
             title: '操作',
             dataIndex: 'opration',
@@ -155,7 +159,16 @@ export default function Md5View(props) {
                     // 这里可以添加下载逻辑
                     console.log(columnData)
                     downloadFile(columnData.url, (progress) => {
-                        console.log(progress)
+                        columnData.progress = progress;
+                        setUrlList(prevList => {
+                            const updatedList = [...prevList];
+                            updatedList.forEach(item => {
+                                if (item.url === columnData.url) {
+                                    item.progress = progress;
+                                }
+                            });
+                            return updatedList;
+                        })
                     }, (data) => {
                         downloadBlob(columnData, data, columnData.fileName || columnData.url.split('/').pop());
                     })
