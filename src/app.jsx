@@ -14,7 +14,7 @@ import PackageView from './page/PackageView';
 import QRCodeView from './page/QRCodeView';
 import ApiView from './page/ApiView';
 import YapiJson2Ts from './page/YapiJson2Ts'
-import Md5View from './page/Md5View'
+import FileMd5View from './page/FileMd5View'
 import ApkView from './page/ApkView';
 import ProjectView from './page/ProjectView';
 import ModelView from './page/ModelView';
@@ -114,7 +114,7 @@ class App extends React.Component {
 			{ label: '二维码', key: 'item-3', children: <QRCodeView /> },
 			{ label: '接口', key: 'item-4', children: <ApiView uploadUrl={this.state.uploadUrl} /> },
 			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
-			{ label: 'MD5', key: 'item-6', children: <Md5View downloadPath={this.state.downloadPath} /> },
+			{ label: 'MD5', key: 'item-6', children: <FileMd5View downloadPath={this.state.downloadPath} /> },
 			{ label: 'APK', key: 'item-7', children: <ApkView tabChangeKey={this.state.activeKey} /> },
 			{ label: '项目管理', key: 'item-8', children: <ProjectView tabChangeKey={this.state.activeKey} /> },
 			// { label: '模板', key: 'item-9', children: <ModelView /> },
