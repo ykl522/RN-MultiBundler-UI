@@ -50,11 +50,13 @@
     <a href="../yapi2ts/index.html">返回</a>
     <h1>字符串转换工具</h1>
     <textarea id="inputText" placeholder="请输入字符串..." rows="10" cols="50"></textarea>
-    <button onclick="convertString()">转换TS类型</button>
-    <pre id="outputText"></pre>
+    <button onclick="convertTsType()">转换TS类型</button>
+    <button style="width: 160px;" onclick="convertJavaBean(true)">转换Java private实体</button>
+    <button style="width: 160px;" onclick="convertJavaBean(false)">转换Java public实体</button>
+    <textarea rows="25" id="outputText"></textarea>
 
     <script>
-        function convertString() {
+        function convertTsType() {
             const inputText = document.getElementById('inputText').value;
             const lines = inputText.split('\n').map(line => line.trim());
             const output = [];
@@ -84,6 +86,51 @@
 
                 // 构造输出行
                 output.push(`${key}${questionMark}: ${convertedType},    // ${comment}`);
+            });
+
+            // 过滤掉孤立的"string"行（如果存在的话，但根据您的输入，这一步可能是多余的）
+            // 由于我们的处理逻辑是基于每行都是一个完整的属性声明，所以这一步实际上不会执行到
+            // 但为了代码的完整性，我还是保留了这部分注释
+
+            // 将输出数组转换为字符串并显示在pre元素中
+            document.getElementById('outputText').textContent = output.join('\n');
+        }
+        function convertJavaBean(isPrivate) {
+            const inputText = document.getElementById('inputText').value;
+            const lines = inputText.split('\n').map(line => line.trim());
+            const output = [];
+            lines.forEach(line => {
+                // 忽略空行和以"format:"开头的行
+                if (!line || line.startsWith('format:')) {
+                    console.log('忽略空行和以"format:"开头的行');
+                    return;
+                }
+
+                // 分割行数据（键、类型、是否必需、注释等）
+                const parts = line.split('\t').map(part => part.trim());
+                if (parts.length < 3) { // 至少应有键、类型和是否必需三部分
+                    // 注意：这里我们假设每行都是一个完整的属性声明，且以制表符分隔
+                    // 如果输入格式与此不符，可能需要进行额外的处理
+                    console.log('parts.length < 3');
+                    return;
+                }
+
+                // 提取键、类型、是否必需和注释
+                const [key, type, isRequiredStr, ...comments] = parts;
+                const isRequired = isRequiredStr === '是';
+                const questionMark = isRequired ? '' : '?'; // 非必填项前加问号
+                const comment = comments.join('\t').trim(); // 合并并清理注释
+
+                // 转换类型（integer转为number）
+                let convertedType = type === 'number' ? 'Integer' : (type.charAt(0).toUpperCase() + type.slice(1));
+
+                let javaEntityCode = '';
+                javaEntityCode += `    /**\n`;
+                javaEntityCode += `      * ${comment}\n`;
+                javaEntityCode += `      **/\n`;
+                javaEntityCode += `    ${isPrivate ? 'private' : 'public'} ${convertedType} ${key};\n`;
+                // 构造输出行
+                output.push(javaEntityCode);
             });
 
             // 过滤掉孤立的"string"行（如果存在的话，但根据您的输入，这一步可能是多余的）

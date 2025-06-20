@@ -1258,7 +1258,7 @@ export default function PackageView(props) {
                     />
                     <text>是否同时新增多语言</text>
                 </Space>
-            </Modal >
+            </Modal>
             {/* ===========================================模块信息侧边抽屉================================= */}
             <Drawer title="模块信息" width={700} placement="right" onClose={onClose} open={open}>
                 {getModules()}

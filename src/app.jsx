@@ -37,6 +37,7 @@ class App extends React.Component {
 			permission: '1',
 			deepSeekKey: '',
 			uploadUrl: '',
+			downloadPath: '',
 			dataSource: [
 				{ key: 'projDir', value: workSpace, isDefault: true, tip: '项目目录' },
 				{ key: 'permission', value: 1, isDefault: true, tip: '权限' },
@@ -65,6 +66,10 @@ class App extends React.Component {
 		ipcRenderer.on('settings', (event) => {
 			console.log('=======settings========')
 			this.setState({ showSettings: !this.state.showSettings })
+		})
+		ipcRenderer.on('DownloadPath', (event, downloadPath) => {
+			console.log('downloadPath------app.jsx-------->' + downloadPath)
+			this.setState({ downloadPath })
 		})
 		ipcRenderer.on('ExePath', (event, exePath) => {
 			console.log('ExePath------app.jsx-------->' + exePath)
@@ -109,7 +114,7 @@ class App extends React.Component {
 			{ label: '二维码', key: 'item-3', children: <QRCodeView /> },
 			{ label: '接口', key: 'item-4', children: <ApiView uploadUrl={this.state.uploadUrl} /> },
 			{ label: 'YAPI转TS', key: 'item-5', children: <YapiJson2Ts /> },
-			{ label: 'MD5', key: 'item-6', children: <Md5View /> },
+			{ label: 'MD5', key: 'item-6', children: <Md5View downloadPath={this.state.downloadPath} /> },
 			{ label: 'APK', key: 'item-7', children: <ApkView tabChangeKey={this.state.activeKey} /> },
 			{ label: '项目管理', key: 'item-8', children: <ProjectView tabChangeKey={this.state.activeKey} /> },
 			// { label: '模板', key: 'item-9', children: <ModelView /> },

@@ -65,6 +65,12 @@ const createWindow = async () => {
   }
   const helpMenu = [
     {
+      label: '访问开发调试目录', click: async () => {
+        const { shell } = require('electron')
+        await shell.openExternal('D:/Git/RN-MultiBundler-UI/node_modules/electron-prebuilt-compile/node_modules/electron/dist/')
+      }
+    },
+    {
       label: '访问Electron官网', click: async () => {
         const { shell } = require('electron')
         await shell.openExternal('https://www.electronjs.org/docs/latest/api/app')
@@ -195,6 +201,7 @@ app.on('ready', () => {
         mainWindow.show()
     }
     mainWindow.webContents.send('ExePath', path.dirname(app.getPath('exe')).replace(/\\/g, '/'))
+    mainWindow.webContents.send('DownloadPath', app.getPath('downloads'))
   })
 });
 
