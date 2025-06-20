@@ -79,6 +79,24 @@ export const uploadFile = async (url, fileName, uri, onProgress, body = {}, conf
     }
 }
 
+export const downloadFile = async (url, progressCallback, dataCallback) => {
+    const response = await axios.get(url, {
+        responseType: 'arraybuffer',
+        onDownloadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            console.log(`下载进度: ${percent}%`);
+            if (progressCallback) {
+                progressCallback(percent);
+            }
+        }
+    });
+    const arraybuffer = response.data;
+    // downloadBlob(blob, url.split('/').pop()); // 使用文件名作为下载的文件名
+    if (dataCallback) {
+        dataCallback(arraybuffer);
+    }
+}
+
 /**
  * 更新域名
  * @param {string} url 

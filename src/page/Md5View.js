@@ -7,21 +7,32 @@
  * @Description: md5
  */
 import { useState, useEffect, useRef } from 'react';
-const { Button, Input, notification, Upload, Table } = require('antd');
+const { Button, Modal, notification, Upload, Table } = require('antd');
 const fs = require('fs');
 const crypto = require('crypto');
 import { InboxOutlined } from '@ant-design/icons';
 import JGG from '../utils/JGG';
-export default function Md5View() {
+import { downloadFile } from '../net/HttpRequest';
+import Draggable from 'react-draggable';
+export default function Md5View(props) {
 
     const [fileList, setFileList] = useState([])
+    const [urlList, setUrlList] = useState([
+        { url: 'https://cps.cirroparcel.it/downapk/pda-prod-release.apk', fileName: 'PDA-it.apk' },
+        { url: 'https://cps.cirroparcel.nl/downapk/pda-prod-release.apk', fileName: 'PDA-nl.apk' },
+        { url: 'https://cps.cirroparcel.com/downapk/pda-prod-release.apk', fileName: 'PDA-fs.apk' },
+    ])
+    const [visible, setVisible] = useState(false)
+    const [bounds, setBounds] = useState({ left: 0, top: 0, bottom: 0, right: 0 });
+    const [disabled, setDisabled] = useState(true);
+    const draggleRef = useRef(null);
     let fileListRef = useRef([])
 
     useEffect(() => {
         console.log("fileList--->", fileList)
     }, [fileList])
 
-    const props = {
+    const draggerProps = {
         name: 'file',
         multiple: true,
         showUploadList: fileList.length > 0,
@@ -67,6 +78,32 @@ export default function Md5View() {
         return md5
     }
 
+    const handleCancel = () => {
+        setVisible(false)
+    }
+
+    // 下载Blob的函数 blob是axios返回的文件数据，fileName是下载的文件名
+    const downloadBlob = (columnData, data, fileName) => {
+        const crypto = require('crypto');
+        const hash = crypto.createHash('md5');
+        const byteArray = Buffer.from(data, 'utf8');
+        hash.update(byteArray);
+        const md5 = hash.digest('hex');
+        console.log('文件下载成功，MD5:', md5);
+        columnData.md5 = md5;
+        setUrlList(prevList => {
+            const updatedList = [...prevList];
+            updatedList.forEach(item => {
+                if (item.url === columnData.url) {
+                    item.md5 = md5;
+                    item.size = byteArray.length; // 更新文件大小
+                }
+            });
+            return updatedList;
+        })
+        // fs.writeFile(props.downloadPath + '\\' + fileName, Buffer.from(data));
+    };
+
     const columns = [
         {
             title: '文件路径',
@@ -90,11 +127,64 @@ export default function Md5View() {
             dataIndex: 'lastModified',
             key: 'lastModified',
             render: (data) => <div style={{ width: 155 }}>{new Date(data).toLocaleString()}</div>
-        }]
+        }
+    ]
+
+    const downloadColumns = [
+        {
+            title: 'URL路径',
+            dataIndex: 'url',
+            key: 'url',
+            render: (data) => <div style={{ width: 380 }}>{data}</div>
+        },
+        {
+            title: '文件大小',
+            dataIndex: 'size',
+            key: 'size',
+            render: (data) => <div style={{ width: 55 }}>{data ? `${(data / 1024 / 1024).toFixed(2)}M` : ''}</div>
+        },
+        {
+            title: 'MD5',
+            dataIndex: 'md5',
+            width: 315,
+            key: 'md5',
+            render: (data) => <a style={{ width: 315 }}>{data}</a>
+        }, {
+            title: '操作',
+            dataIndex: 'opration',
+            key: 'opration',
+            render: (_, columnData) => <div style={{ width: 55, color: 'blue' }}
+                onClick={() => {
+                    // 这里可以添加下载逻辑
+                    console.log(columnData)
+                    downloadFile(columnData.url, (progress) => {
+                        console.log(progress)
+                    }, (data) => {
+                        downloadBlob(columnData, data, columnData.fileName || columnData.url.split('/').pop());
+                    })
+                }} >下载</div>
+        }
+    ]
+
+    const onStart = (_event, uiData) => {
+        var _a;
+        const { clientWidth, clientHeight } = window.document.documentElement;
+        const targetRect =
+            (_a = draggleRef.current) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
+        if (!targetRect) {
+            return;
+        }
+        setBounds({
+            left: -targetRect.left + uiData.x,
+            right: clientWidth - (targetRect.right - uiData.x),
+            top: -targetRect.top + uiData.y,
+            bottom: clientHeight - (targetRect.bottom - uiData.y),
+        });
+    };
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: 30, paddingRight: 30 }}>
-            <Upload.Dragger height={250} {...props} fileList={fileList}>
+            <Upload.Dragger height={250} {...draggerProps} fileList={fileList}>
                 <p className="ant-upload-drag-icon">
                     <InboxOutlined />
                 </p>
@@ -104,14 +194,66 @@ export default function Md5View() {
                 </p>
             </Upload.Dragger>
             <Table style={{ marginTop: 10 }} pagination={false} bordered size={'small'} rowKey={'uid'} columns={columns} dataSource={fileList} />
-            <Button style={{ width: 100, marginTop: 15, marginBottom: 15 }} onClick={() => {
-                var board = [["5", "3", ".", ".", "7", ".", ".", ".", "."], ["6", ".", ".", "1", "9", "5", ".", ".", "."], [".", "9", "8", ".", ".", ".", ".", "6", "."], ["8", ".", ".", ".", "6", ".", ".", ".", "3"], ["4", ".", ".", "8", ".", "3", ".", ".", "1"], ["7", ".", ".", ".", "2", ".", ".", ".", "6"], [".", "6", ".", ".", ".", ".", "2", "8", "."], [".", ".", ".", "4", "1", "9", ".", ".", "5"], [".", ".", ".", ".", "8", ".", ".", "7", "9"]]
-                console.log('JGG---', JGG.solveSudoku2(board))
-                setFileList(() => {
-                    fileListRef.current = []
-                    return []
-                })
-            }}>清空</Button>
+            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+                <Button style={{ width: 100, marginTop: 15, marginBottom: 15 }} onClick={() => {
+                    var board = [["5", "3", ".", ".", "7", ".", ".", ".", "."], ["6", ".", ".", "1", "9", "5", ".", ".", "."], [".", "9", "8", ".", ".", ".", ".", "6", "."], ["8", ".", ".", ".", "6", ".", ".", ".", "3"], ["4", ".", ".", "8", ".", "3", ".", ".", "1"], ["7", ".", ".", ".", "2", ".", ".", ".", "6"], [".", "6", ".", ".", ".", ".", "2", "8", "."], [".", ".", ".", "4", "1", "9", ".", ".", "5"], [".", ".", ".", ".", "8", ".", ".", "7", "9"]]
+                    console.log('JGG---', JGG.solveSudoku2(board))
+                    setFileList(() => {
+                        fileListRef.current = []
+                        return []
+                    })
+                }}>清空</Button>
+                <Button style={{ width: 100, marginTop: 15, marginBottom: 15, marginLeft: 15 }} onClick={() => {
+                    setVisible(true)
+                }}>下载文件</Button>
+            </div>
+            {/** 下载文件对话框 */}
+            <Modal
+                title={
+                    <div
+                        style={{ width: '100%', cursor: 'move' }}
+                        onMouseOver={() => {
+                            if (disabled) {
+                                setDisabled(false);
+                            }
+                        }}
+                        onMouseOut={() => {
+                            setDisabled(true);
+                        }}
+                        onFocus={() => { }}
+                        onBlur={() => { }}
+                    >
+                        下载文件生成MD5
+                    </div>
+                }
+                visible={visible}
+                onCancel={handleCancel}
+                width={1000}
+                mask={false}
+                footer={[
+                    <Button key="back" onClick={handleCancel}>关闭</Button>,
+                ]}
+                modalRender={modal => (
+                    <Draggable
+                        disabled={disabled}
+                        bounds={bounds}
+                        nodeRef={draggleRef}
+                        onStart={(event, uiData) => onStart(event, uiData)}
+                    >
+                        <div ref={draggleRef}>{modal}</div>
+                    </Draggable>
+                )}
+            >
+                <Table
+                    style={{ marginTop: 10 }}
+                    pagination={false}
+                    bordered
+                    size={'small'}
+                    rowKey={'url'}
+                    columns={downloadColumns}
+                    dataSource={urlList}
+                />
+            </Modal>
         </div>
     )
 }
