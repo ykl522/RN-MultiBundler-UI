@@ -1,7 +1,7 @@
 {
   "name": "rn_multibundler_ui",
   "productName": "APP开发工具",
-  "version": "1.1.0",
+  "version": "1.0.3",
   "description": "主要功能：可视化RN拆包，可一键打包",
   "main": "src/index.js",
   "scripts": {

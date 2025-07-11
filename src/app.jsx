@@ -110,6 +110,12 @@ class App extends React.Component {
 		})
 	}
 
+	// 检查是否有权限 permissionValue: 全部13个模块权限为2^13-1=8191
+	// 也可以这样计算：1|2|4|8|16|32|64|128|256|512|1024|2048|4096 = 8191，多个模块权限值取或运算
+	hasPermission(permissionValue, moduleId){
+		return (permissionValue & moduleId) === moduleId;
+	};
+
 	render() {
 		const items = [
 			{ label: '打包', key: 'item-1', children: <PackageView goUpload={() => { this.setState({ activeKey: 'item-4' }) }} /> },
@@ -131,7 +137,10 @@ class App extends React.Component {
 		}
 		let newItems = []
 		if (this.state.permission) {
-			newItems = items.filter(item => Number(item.key.substring(item.key.indexOf('-') + 1)) <= Number(this.state.permission))
+			newItems = items.filter(item => {
+				const id = Number(item.key.substring(item.key.indexOf('-') + 1))
+				return this.hasPermission(Number(this.state.permission), 1 << (id - 1))
+			})
 		}
 		return (
 			<div>

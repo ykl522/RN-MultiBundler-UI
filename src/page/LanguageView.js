@@ -345,12 +345,12 @@ export default function LanguageView(props) {
                 }}>复制结果</Button>
                 <Button style={{ width: 120, marginLeft: 10 }} onClick={async () => {
                     const { shell } = require('electron')
-                    await shell.openExternal('https://ztn.feishu.cn/wiki/wikcnlbOqQs7Vz21ezzODatbIGd?sheet=5cf23f')
+                    await shell.openExternal('https://acnjh1thgeif.feishu.cn/wiki/S5R9w10NoiDA4FkihREcspkVnFe?table=tblAtll4U7nChLMK&view=vewg9JxwuA')
                 }}>跳转在线文档</Button>
                 <Button style={{ width: 150, marginLeft: 10 }} onClick={async () => {
                     const { shell } = require('electron')
-                    await shell.openExternal('https://ztn.feishu.cn/wiki/QokYw7IY7i58nekio1sc5dnunOb?table=tblVtbqBj9cDTzkk&view=vewFgtT4on')
-                }}>跳转DeepSeek翻译</Button>
+                    await shell.openExternal('https://acnjh1thgeif.feishu.cn/wiki/RUJhw7gtaibLRzk28oUcCNJonod?table=tblSexePUjEw5EFz&view=vewVZdGKFL')
+                }}>跳转已翻译词条</Button>
                 <Button style={{ width: 100, marginLeft: 10 }} onClick={async () => {
                     setOutputTextArea('')
                     setInputTextArea('')
