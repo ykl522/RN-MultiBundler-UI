@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成本优化方案计算器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .input-section label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a2a6c;
+        }
+
+        .input-section input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            min-width: 200px;
+            transition: border-color 0.3s;
+        }
+
+        .input-section input:focus {
+            border-color: #1a2a6c;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(26, 42, 108, 0.2);
+        }
+
+        button {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(to right, #233380, #c52c2c);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table th {
+            background: linear-gradient(to right, #1a2a6c, #233380);
+            color: white;
+            text-align: left;
+            padding: 15px;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .data-table tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .result-section {
+            margin-top: 20px;
+        }
+
+        .result-section h2 {
+            color: #1a2a6c;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-item .label {
+            font-weight: 600;
+            color: #1a2a6c;
+        }
+
+        .summary-item .value {
+            font-weight: 600;
+            color: #b21f1f;
+        }
+
+        .result-textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            font-family: monospace;
+            font-size: 1rem;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+            resize: vertical;
+        }
+
+        .result-textarea:focus {
+            outline: none;
+            border-color: #1a2a6c;
+        }
+
+        .detail-table {
+            width: 100%;
+            margin: 25px 0;
+            border-collapse: collapse;
+        }
+
+        .detail-table th {
+            background-color: #1a2a6c;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .detail-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .detail-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            padding: 20px;
+            font-size: 0.9rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .input-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>成本优化方案计算器</h1>
+            <p>输入您需要的总数量，系统将自动计算满足该数量要求（可超出）的最小成本方案</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>方案数据</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>方案ID</th>
+                            <th>成本（元）</th>
+                            <th>数量</th>
+                            <th>最大使用次数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>方案1</td>
+                            <td>6</td>
+                            <td>7</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td>方案2</td>
+                            <td>30</td>
+                            <td>27</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td>方案3</td>
+                            <td>68</td>
+                            <td>55</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td>方案4</td>
+                            <td>128</td>
+                            <td>90</td>
+                            <td>10</td>
+                        </tr>
+                        <tr>
+                            <td>方案5</td>
+                            <td>198</td>
+                            <td>120</td>
+                            <td>10</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="input-section">
+                    <label for="quantity">输入需要的总数量：</label>
+                    <input type="number" id="quantity" min="1" value="70" placeholder="例如：70">
+                    <button id="calculate-btn">计算最优方案</button>
+                </div>
+
+                <div class="result-section">
+                    <h2>计算结果</h2>
+
+                    <div class="summary-box">
+                        <div class="summary-item">
+                            <span class="label">目标数量：</span>
+                            <span id="target-quantity" class="value">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">实际达成数量：</span>
+                            <span id="achieved-quantity" class="value">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">最小总成本：</span>
+                            <span id="total-cost" class="value">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">方案使用情况：</span>
+                            <span id="schemes-used" class="value">-</span>
+                        </div>
+                    </div>
+
+                    <h3>详细方案</h3>
+                    <table class="detail-table" id="detail-table">
+                        <thead>
+                            <tr>
+                                <th>方案</th>
+                                <th>使用次数</th>
+                                <th>每次数量</th>
+                                <th>每次成本</th>
+                                <th>总数量</th>
+                                <th>总成本</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 结果将通过JS动态填充 -->
+                        </tbody>
+                    </table>
+
+                    <h3>计算结果输出</h3>
+                    <textarea class="result-textarea" id="result-output" rows="16" placeholder="计算结果将显示在这里..."
+                        readonly></textarea>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>成本优化方案计算器 &copy; 2023 | 基于动态规划算法实现</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 方案数据
+            const items = [
+                { cost: 6, quant: 7, times: 3 },
+                { cost: 30, quant: 27, times: 5 },
+                { cost: 68, quant: 55, times: 5 },
+                { cost: 128, quant: 90, times: 10 },
+                { cost: 198, quant: 120, times: 10 }
+            ];
+
+            const calculateBtn = document.getElementById('calculate-btn');
+            const quantityInput = document.getElementById('quantity');
+            const resultOutput = document.getElementById('result-output');
+            const targetQuantityEl = document.getElementById('target-quantity');
+            const achievedQuantityEl = document.getElementById('achieved-quantity');
+            const totalCostEl = document.getElementById('total-cost');
+            const schemesUsedEl = document.getElementById('schemes-used');
+            const detailTableBody = document.querySelector('#detail-table tbody');
+
+            calculateBtn.addEventListener('click', calculateOptimalSolution);
+
+            // 初始计算一次
+            calculateOptimalSolution();
+
+            function calculateMinCostWithPlan(totalQuantity, items) {
+                // 初始化动态规划数组
+                const dp = new Array(totalQuantity + 1).fill().map(() => ({
+                    cost: Infinity,
+                    counts: new Array(items.length).fill(0)
+                }));
+
+                // 初始状态：数量0的成本为0
+                dp[0] = { cost: 0, counts: new Array(items.length).fill(0) };
+
+                // 遍历每个物品方案
+                for (let j = 0; j < items.length; j++) {
+                    const { cost, quant, times } = items[j];
+
+                    // 复制当前状态（避免修改正在遍历的数组）
+                    const currentStates = [...dp];
+
+                    // 尝试使用当前方案1到times次
+                    for (let k = 1; k <= times; k++) {
+                        // 倒序遍历所有可能数量
+                        for (let i = totalQuantity; i >= 0; i--) {
+                            // 跳过不可达状态
+                            if (currentStates[i].cost === Infinity) continue;
+
+                            // 计算新状态
+                            const newQuant = i + k * quant;
+                            const newCost = currentStates[i].cost + k * cost;
+                            const target = Math.min(newQuant, totalQuantity);
+
+                            // 仅当新成本更低时更新
+                            if (newCost < dp[target].cost) {
+                                // 创建新的计数数组
+                                const newCounts = [...currentStates[i].counts];
+                                newCounts[j] += k;
+
+                                // 更新目标状态
+                                dp[target] = {
+                                    cost: newCost,
+                                    counts: newCounts
+                                };
+                            }
+                        }
+                    }
+                }
+
+                // 提取最优方案详情
+                const result = {
+                    totalCost: dp[totalQuantity].cost,
+                    totalQuantity: 0,
+                    details: [],
+                    counts: dp[totalQuantity].counts
+                };
+
+                // 计算详细方案信息
+                for (let j = 0; j < items.length; j++) {
+                    const count = dp[totalQuantity].counts[j];
+                    if (count > 0) {
+                        const { cost, quant } = items[j];
+                        const totalQuant = quant * count;
+                        const totalItemCost = cost * count;
+
+                        result.details.push({
+                            itemIndex: j,
+                            quantityPerUse: quant,
+                            costPerUse: cost,
+                            timesUsed: count,
+                            totalQuantity: totalQuant,
+                            totalCost: totalItemCost
+                        });
+
+                        result.totalQuantity += totalQuant;
+                    }
+                }
+
+                return result;
+            }
+
+            function calculateOptimalSolution() {
+                const totalQuantity = parseInt(quantityInput.value) || 70;
+
+                // 验证输入
+                if (isNaN(totalQuantity)) {
+                    alert("请输入有效的数字");
+                    return;
+                }
+
+                if (totalQuantity <= 0) {
+                    alert("总数量必须大于0");
+                    return;
+                }
+
+                // 更新目标数量显示
+                targetQuantityEl.textContent = totalQuantity.toLocaleString();
+
+                // 计算最优方案
+                const result = calculateMinCostWithPlan(totalQuantity, items);
+
+                // 更新UI显示
+                achievedQuantityEl.textContent = result.totalQuantity.toLocaleString();
+                totalCostEl.textContent = result.totalCost.toLocaleString() + " 元";
+
+                // 计算使用的方案数量
+                const schemesUsed = result.details.length;
+                schemesUsedEl.textContent = schemesUsed + " 个方案";
+
+                // 清空详细表格
+                detailTableBody.innerHTML = '';
+
+                // 构建详细方案表格
+                result.details.forEach(detail => {
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td>方案${detail.itemIndex + 1}</td>
+                        <td>${detail.timesUsed}</td>
+                        <td>${detail.quantityPerUse}</td>
+                        <td>${detail.costPerUse} 元</td>
+                        <td>${detail.totalQuantity}</td>
+                        <td>${detail.totalCost} 元</td>
+                    `;
+
+                    detailTableBody.appendChild(row);
+                });
+
+                // 构建结果输出文本
+                let outputText = `目标数量: ${totalQuantity}\n`;
+                outputText += `实际达成数量: ${result.totalQuantity}\n`;
+                outputText += `最小总成本: ${result.totalCost} 元\n\n`;
+                outputText += "方案详情:\n";
+
+                result.details.forEach(detail => {
+                    outputText += `- 方案${detail.itemIndex + 1}: 使用${detail.timesUsed}次, `;
+                    outputText += `每次数量=${detail.quantityPerUse}, `;
+                    outputText += `每次成本=${detail.costPerUse}元, `;
+                    outputText += `总数量=${detail.totalQuantity}, `;
+                    outputText += `总成本=${detail.totalCost}元\n`;
+                });
+
+                outputText += `\n验证: 总数量 = ${result.totalQuantity}, 总成本 = ${result.totalCost}元`;
+
+                resultOutput.value = outputText;
+            }
+        });
+    </script>
+</body>
+
+</html>

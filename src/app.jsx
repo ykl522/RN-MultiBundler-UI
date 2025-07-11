@@ -24,6 +24,7 @@ import InterfaceView from './page/InterfaceView';
 import AIView from './page/AIView';
 import { Modal, Tabs, Table, Button, Input, Typography, Tooltip } from 'antd';
 import { uploadFile } from './net/HttpRequest';
+import UtilsView from './page/UtilsView';
 class App extends React.Component {
 	constructor(props) {
 		super(props);
@@ -123,9 +124,10 @@ class App extends React.Component {
 			{ label: '安卓日志', key: 'item-9', children: <LogView tabChangeKey={this.state.activeKey} /> },
 			{ label: '接口提取', key: 'item-10', children: <InterfaceView /> },
 			{ label: 'DeepSeek', key: 'item-11', children: <AIView deepSeekKey={this.state.deepSeekKey} /> },
+			{ label: '其他工具', key: 'item-12', children: <UtilsView /> },
 		];
 		if (this.state.showJJG) {
-			items.push({ label: '九宫格', key: 'item-12', children: <JGGView /> })
+			items.push({ label: '九宫格', key: 'item-13', children: <JGGView /> })
 		}
 		let newItems = []
 		if (this.state.permission) {

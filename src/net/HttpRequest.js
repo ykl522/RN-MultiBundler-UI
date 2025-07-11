@@ -6,7 +6,6 @@
  */
 import axios from 'axios';
 // axios.defaults.adapter = require('axios/lib/adapters/http');
-
 // 上传文件超时3分钟
 const instance = axios.create({
     baseURL: "",
@@ -28,6 +27,7 @@ instance.interceptors.request.use(function (config) {
     // 	...config.headers,
     // }
     // 在发送请求之前做些什么
+    console.log("请求拦截处理-config:", config)
     return config;
 }, function (error) {
     // 对请求错误做些什么
@@ -55,23 +55,32 @@ instance.interceptors.response.use(function (response) {
  * @param {object} [body] 
  * @param {object} [config] 
  */
-export const uploadFile = async (url, fileName, uri, onProgress, body = {}, config = defaultHeaders) => {
+export const uploadFile = async (url, fileName, uri, onProgress, config = defaultHeaders) => {
     if (url) {
         let fd = new FormData();
         const fs = require('fs')
         let fileBlob = fs.readFileSync(uri)
-        fd.append('file', new Blob([fileBlob]), fileName)
+        fd.append('files', new Blob([fileBlob]), fileName)
+        fd.append('Content-Type', 'image/*')
         let httpUrl = new URL(url)
         updateOpaUrl(httpUrl.origin)
+        console.log(config)
         return new Promise((resolve, reject) => {
             instance.post(httpUrl.pathname, fd, {
-                defaultHeaders,
-                onUploadProgress: ({ loaded, total }) => {
-                    if (onProgress) onProgress(loaded / total)
+                onUploadProgress: (progressEvent) => {
+                    if (progressEvent && progressEvent.total) {
+                        console.log('progressEvent-->', progressEvent)
+                        if (onProgress) onProgress(progressEvent.loaded / progressEvent.total)
+                    }
                 },
-                // ...config
+                headers: Object.assign({}, config.headers, defaultHeaders.headers)
             }).then(res => {
-                resolve(res.data)
+                if (res && res.code === 200) {
+                    console.log('res成功-->', res)
+                    resolve(res.data)
+                } else {
+                    reject(res.data)
+                }
             }).catch(err => {
                 reject(err)
             })
@@ -152,16 +161,14 @@ export const get = async (url, config = {}) => {
     if (url) {
         let httpUrl = new URL(url + '')
         updateOpaUrl(httpUrl.origin)
-        // alert(JSON.stringify(httpUrl.origin))
         return new Promise((resolve, reject) => {
             instance.get(httpUrl.pathname,
-                {
+                config ? config : {
                     headers: {
                         "Content-Type": "application/json",
                         "Access_token": "Basic MGM0ZWU3YWZiNTkyZWM3NThiMTU0ZDY3NDE3NTVmODEmQWRtaW4=",
                         "Authorization": "Nebula token:375152220c324ede9a88741f2bc18e4e"
                     },
-                    // ...config
                 }
             ).then(res => {
                 if (res) resolve(res.data)

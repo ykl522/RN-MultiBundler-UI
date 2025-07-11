@@ -174,14 +174,14 @@ export default function ProjectView(props) {
      */
     const copyApk = async (project, country) => {
         if (country) {
-            await fs.readdirSync(project.directory + `\\app\\${country.toLocaleLowerCase()}_prod\\release`).forEach(fileName => {
+            await fs.readdirSync(project.directory + `\\apk\\${country.toLocaleLowerCase()}_prod\\release`).forEach(fileName => {
                 console.log(fileName)
                 if (fileName.endsWith('.apk')) {
                     const outputDir = 'D:\\Documents\\APK\\'
                     if (!fs.existsSync(outputDir)) {
                         fs.mkdirSync(outputDir, { recursive: true })
                     }
-                    const srcFile = `${project.directory}\\app\\${country.toLocaleLowerCase()}_prod\\release\\${fileName}`
+                    const srcFile = `${project.directory}\\apk\\${country.toLocaleLowerCase()}_prod\\release\\${fileName}`
                     fs.copyFileSync(srcFile, `D:\\Documents\\APK\\${fileName}`)
                     // fr_prod_v1.9.81_45.apk
                     if (fileName.includes('_prod_v')) {

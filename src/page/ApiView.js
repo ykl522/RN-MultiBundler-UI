@@ -13,7 +13,7 @@ const { remote } = require("electron");
 import { workSpace } from '../config'
 
 export default function ApiView(props) {
-    const stateRef = useRef({ url: '', params: '' })
+    const stateRef = useRef({ url: '', params: '', headers: '' })
     const [responseResult, setResponseResult] = useState('')
     const [progress, setProgress] = useState('')
     const [api, contextHolder] = notification.useNotification();
@@ -40,19 +40,15 @@ export default function ApiView(props) {
         uploadFile(url, fileName, file, (progress) => {
             setProgress((progress * 100).toFixed(0) + '%')
             if (progress == 1) {
+                console.log('上传完成---------' + progress)
                 setLoadingTime(new Date().getTime() - requestTime.current)
                 openNotification('bottomRight', '上传完成')
             }
-        }).then((res) => {
+        }, stateRef.current.headers ? { headers: stateRef.current.headers } : null).then((res) => {
             setResponseResult(JSON.stringify(res, null, 2))
         }).catch((err) => {
-            if (url && !url.includes('APP')) {
-                let url = getUploadUrl(props.uploadUrl, fileName, 'APP')
-                uploadFileReq(url, fileName, file)
-            } else {
-                setResponseResult(JSON.stringify(err, null, 2))
-                openNotification('bottomRight', '文件已存在')
-            }
+            setResponseResult(JSON.stringify(err, null, 2))
+            openNotification('bottomRight', JSON.stringify(err, null, 2))
         })
     }
 
@@ -61,6 +57,20 @@ export default function ApiView(props) {
             {contextHolder}
             <Input placeholder={'请输入接口地址'} onChange={(e) => {
                 stateRef.current.url = e.target.value
+            }} />
+            <Input.TextArea rows={5} style={{ marginTop: 10 }} placeholder={'请输入请求Headers'} onChange={(e) => {
+                if (e.target.value) {
+                    var obj = {};
+                    e.target.value.split('\n').forEach(function(line) {
+                        if (line.trim() === "") return;
+                        var parts = line.split(':');
+                        var key = parts[0].trim();
+                        var value = parts[1].trim();
+                        obj[key] = value;
+                    });
+                    console.log("obj------------>" + JSON.stringify(obj))
+                    stateRef.current.headers = obj
+                }
             }} />
             <Input.TextArea rows={6} style={{ marginTop: 10 }} placeholder={'请输入请求参数'} onChange={(e) => {
                 stateRef.current.params = e.target.value
@@ -74,7 +84,8 @@ export default function ApiView(props) {
                     setResponseResult('')
                     setLoadingTime(0)
                     requestTime.current = new Date().getTime()
-                    post(stateRef.current.url, stateRef.current.params ? JSON.parse(stateRef.current.params) : null).then((res) => {
+                    post(stateRef.current.url, stateRef.current.params ? JSON.parse(stateRef.current.params) : null, 
+                        stateRef.current.headers ? { headers: stateRef.current.headers } : null).then((res) => {
                         setLoadingTime(new Date().getTime() - requestTime.current)
                         setResponseResult(JSON.stringify(res, null, 2))
                     }).catch((err) => {
@@ -91,7 +102,7 @@ export default function ApiView(props) {
                     setResponseResult('')
                     setLoadingTime(0)
                     requestTime.current = new Date().getTime()
-                    get(stateRef.current.url).then((res) => {
+                    get(stateRef.current.url, stateRef.current.headers ? { headers: stateRef.current.headers } : null).then((res) => {
                         setLoadingTime(new Date().getTime() - requestTime.current)
                         setResponseResult(JSON.stringify(res, null, 2))
                     }).catch((err) => {
@@ -116,19 +127,8 @@ export default function ApiView(props) {
                             if (filePath) {
                                 const file = filePath[0] + '';
                                 let fileName = file.substring(file.lastIndexOf('\\') + 1)
-                                let url = getUploadUrl(props.uploadUrl, fileName)
+                                let url = props.uploadUrl || stateRef.current.url
                                 uploadFileReq(url, fileName, file)
-                                // uploadFile(url, fileName, file, (progress) => {
-                                //     setProgress((progress * 100).toFixed(0) + '%')
-                                //     if (progress == 1) {
-                                //         openNotification('bottomRight', '上传完成')
-                                //     }
-                                // }).then((res) => {
-                                //     setResponseResult(JSON.stringify(res, null, 2))
-                                // }).catch((err) => {
-                                //     setResponseResult(JSON.stringify(err, null, 2))
-                                //     openNotification('bottomRight', '文件已存在')
-                                // })
                             } else {
                                 openNotification('bottomRight', '取消选择文件')
                             }
