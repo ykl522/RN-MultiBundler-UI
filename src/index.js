@@ -95,7 +95,7 @@ const createWindow = async () => {
     {
       label: '关于', click: async () => {
         const { dialog } = require('electron')
-        await dialog.showMessageBox({ title: "关于", message: `云途APP开发工具\n版本号：${app.getVersion()}`, type: 'info' })
+        await dialog.showMessageBox({ title: "关于", message: `云途APP开发工具\n版本号：${app.getVersion()}\n作者：🐒🌱😊`, type: 'info' })
       }
     }
   ].filter((item) => configObj.permission ? true : (item.label !== '看板娘' && item.label !== '九宫格'))

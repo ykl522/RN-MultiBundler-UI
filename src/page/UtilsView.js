@@ -5,6 +5,11 @@ import { DownOutlined } from '@ant-design/icons';
 import { workSpace } from '../config'
 import WinExec from '../utils/WinExec';
 
+/**
+ * 其他工具
+ * @param {*} props 
+ * @returns 
+ */
 export default function UtilsView(props) {
 
     const [quantity, setQuantity] = useState(0);

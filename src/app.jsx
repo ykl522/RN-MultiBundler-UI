@@ -17,13 +17,11 @@ import YapiJson2Ts from './page/YapiJson2Ts'
 import FileMd5View from './page/FileMd5View'
 import ApkView from './page/ApkView';
 import ProjectView from './page/ProjectView';
-import ModelView from './page/ModelView';
 import LogView from './page/LogView';
 import JGGView from './page/JGGView';
 import InterfaceView from './page/InterfaceView';
 import AIView from './page/AIView';
 import { Modal, Tabs, Table, Button, Input, Typography, Tooltip } from 'antd';
-import { uploadFile } from './net/HttpRequest';
 import UtilsView from './page/UtilsView';
 class App extends React.Component {
 	constructor(props) {
@@ -50,6 +48,7 @@ class App extends React.Component {
 		this.configPath = ''
 	}
 
+	// 数组转json
 	arrayToJson(arr) {
 		return arr.reduce((acc, item) => {
 			acc[item.key] = item.value; // 将每个对象的 key 和 value 添加到结果对象中
@@ -110,8 +109,13 @@ class App extends React.Component {
 		})
 	}
 
-	// 检查是否有权限 permissionValue: 全部13个模块权限为2^13-1=8191
-	// 也可以这样计算：1|2|4|8|16|32|64|128|256|512|1024|2048|4096 = 8191，多个模块权限值取或运算
+	/**
+	 * 检查是否有权限 permissionValue: 全部13个模块权限为2^13-1=8191
+	 * 也可以这样计算：1|2|4|8|16|32|64|128|256|512|1024|2048|4096 = 8191，多个模块权限值取或运算
+	 * @param {*} permissionValue config.json文件中设置的权限值
+	 * @param {*} moduleId 模块ID 为2的指数值
+	 * @returns 
+	 */
 	hasPermission(permissionValue, moduleId){
 		return (permissionValue & moduleId) === moduleId;
 	};
