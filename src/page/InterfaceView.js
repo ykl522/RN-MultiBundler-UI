@@ -8,7 +8,7 @@
  */
 
 import { Button, Input, notification } from 'antd';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import WinExec from '../utils/WinExec';
 
 export default function InterfaceView() {

@@ -6,7 +6,7 @@
  * @FilePath: \RN-MultiBundler-UI\src\page\Md5View.js
  * @Description: md5
  */
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 const { Button, Modal, notification, Upload, Table } = require('antd');
 const fs = require('fs');
 const crypto = require('crypto');

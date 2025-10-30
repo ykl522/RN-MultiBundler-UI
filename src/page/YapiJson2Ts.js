@@ -1,6 +1,6 @@
 // import '../styles/yapi2ts.css'
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
 /**
  * Yapi接口json转ts类型

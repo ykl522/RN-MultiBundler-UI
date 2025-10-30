@@ -6,7 +6,7 @@
  * @FilePath: \RN-MultiBundler-UI\src\page\JGGView.js
  */
 import { Button } from 'antd';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import JGG from '../utils/JGG';
 const { cloneDeep } = require('lodash')
 

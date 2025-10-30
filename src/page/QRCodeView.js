@@ -7,7 +7,7 @@
  */
 import QRCode from 'qrcode.react';
 import Barcode from 'jsbarcode'
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 const { Button, Input, notification } = require('antd');
 let jsBarcodeRefs = []
 

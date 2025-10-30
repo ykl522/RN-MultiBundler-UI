@@ -1,5 +1,5 @@
 {
-  "name": "rn_multibundler_ui",
+  "name": "multibundler_ui",
   "productName": "APP开发工具",
   "version": "1.0.3",
   "description": "主要功能：可视化RN拆包，可一键打包",
@@ -13,7 +13,7 @@
     "package:linux": "electron-packager . --overwrite --platform=linux --arch=x64 --out=out",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --cache --color --ext .jsx,.js,.tsx.ts src"
+    "lint": "eslint --cache --color --ext .jsx,.js,.tsx.ts src/"
   },
   "keywords": [],
   "author": "🐒🌱😊",
@@ -33,7 +33,10 @@
         ]
       },
       "electronPackagerConfig": {
-        "packageManager": "yarn"
+        "packageManager": "yarn",
+        "ignore": [
+          "node_modules/electron-prebuilt-compile/node_modules"
+        ]
       },
       "electronWinstallerConfig": {
         "name": "RNMultiBundlerUI"
@@ -55,7 +58,6 @@
     "axios": "^0.20.0",
     "cross-spawn": "^7.0.3",
     "electron-compile": "6.4.4",
-    "electron-devtools-installer": "^3.1.1",
     "fix-path": "^2.1.0",
     "iconv-lite": "^0.6.3",
     "jsbarcode": "^3.11.5",

@@ -6,18 +6,20 @@
  * @FilePath: \RN-MultiBundler-UI\src\page\ProjectView.js
  * @Description: 项目管理
  */
-import { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 const { Button, Modal, notification, Checkbox, Menu, Dropdown, Input, Space } = require('antd');
 const { remote } = require("electron");
 import { DownOutlined } from '@ant-design/icons';
 import { workSpace } from '../config'
 import WinExec from '../utils/WinExec';
+import CreateMoudle from './createModel';
 const projDir = workSpace || __dirname;
 const fs = require("fs");
 
 export default function ProjectView(props) {
     const [modal, modalContextHolder] = Modal.useModal();
     const [api, contextHolder] = notification.useNotification();
+    const createMoudle = CreateMoudle();
     const openNotification = (des, placement = 'bottomRight') => {
         api.info({
             message: `提示`,
@@ -31,6 +33,7 @@ export default function ProjectView(props) {
     const [selectedSys, setSelectedSys] = useState(undefined)
     const [modleName, setModleName] = useState('')
     const [modlePermission, setModlePermission] = useState('')
+    const [modleRouter, setModleRouter] = useState('')
     const dbuPDAPath = useRef('')
 
     const sysItems = [
@@ -41,7 +44,7 @@ export default function ProjectView(props) {
         <Menu
             selectable
             onClick={(e) => {
-                if (sysItems[e.key].label) {
+                if (e.key && sysItems[e.key] && sysItems[e.key].label) {
                     setSelectedSys(sysItems[e.key])
                 }
             }}
@@ -159,14 +162,6 @@ export default function ProjectView(props) {
         return false
     }
 
-    function ensureDirectoryExistence(filePath) {
-        const path = require('path');
-        const dirName = path.dirname(filePath);
-        if (!fs.existsSync(dirName)) {
-            fs.mkdirSync(dirName, { recursive: true });
-        }
-    }
-
     /**
      * // 复制生产包
      * @param {object} project 项目
@@ -187,9 +182,9 @@ export default function ProjectView(props) {
                     if (fileName.includes('_prod_v')) {
                         const version = fileName.substring(fileName.indexOf('_prod_v') + 7, fileName.lastIndexOf('_'))
                         const svnDir = `D:\\Documents\\APK\\PDA\\${version}\\${country.toLocaleUpperCase()}\\`
-                        ensureDirectoryExistence(outputDir + "\\PDA\\");
-                        ensureDirectoryExistence(outputDir + "\\PDA\\${version}\\");
-                        ensureDirectoryExistence(svnDir);
+                        createMoudle.ensureDirectoryExistence(outputDir + "\\PDA\\");
+                        createMoudle.ensureDirectoryExistence(outputDir + "\\PDA\\${version}\\");
+                        createMoudle.ensureDirectoryExistence(svnDir);
                         if (!fs.existsSync(svnDir)) {
                             fs.mkdirSync(svnDir, { recursive: true });
                         }
@@ -203,207 +198,6 @@ export default function ProjectView(props) {
 
     const handleCancel = () => {
         setVisible(false)
-    }
-
-    // 将驼峰式命名转换为下划线命名
-    const camelToUnderscore = (str, isUpperCase = true) => {
-        if (!str || str.length === 0) {
-            return str;
-        }
-        if (!isUpperCase) {
-            return str
-                .replace(/([a-z])([A-Z])/g, '$1_$2')  // 在小写字母后的大写字母前插入下划线
-                .toLowerCase();                        // 转为全小写
-        }
-        return str
-            .replace(/([a-z])([A-Z])/g, '$1_$2')  // 在小写字母后的大写字母前插入下划线
-            .toUpperCase();                         // 转为全大写
-    }
-
-    // 将字符串转换为驼峰式命名
-    const toCamelCase = (str) => {
-        if (str.length === 0) {
-            return str;
-        }
-        return str.charAt(0).toLowerCase() + str.slice(1);
-    }
-
-    const getPublicString = (modelNameList, modelNoteList) => {
-        const modlePermissionUpper = camelToUnderscore(modelNameList[0]);
-        if (!modelNameList || modelNameList.length === 0) {
-            return ""
-        }
-        let code = ''
-        for (const index in modelNameList) {
-            const modelName = modelNameList[Number(index)]
-            const modelNote = modelNoteList[Number(index)];
-            if (modelName) {
-                code = code + `
-        // ${modelNote}        
-        public static final String ${camelToUnderscore(modelName)}_ACTIVITY = ${modlePermissionUpper} + "/${modelName}Activity";`;
-            }
-        }
-        return code
-    }
-
-    const writeRouterCode = (routPth, data, modleClassName, modlePermissionUpper, modelNameList, modelNoteList) => {
-        if (data) {
-            if (!data.includes(`public static class ${modlePermissionUpper}`)) {
-                let oldCode = data.substring(0, data.lastIndexOf('}'));
-                // 生成路由配置代码
-                let newCode = oldCode + `
-    /**
-    * ${modleName}
-    */
-    public static class ${modlePermissionUpper} {
-        private static final String ${modlePermissionUpper} = "/ui/${selectedSys.label}/${toCamelCase(modleClassName)}";${getPublicString(modelNameList, modelNoteList)}
-    }
-}`
-                fs.writeFileSync(routPth, newCode)
-            } else {
-                let oldCode = data.substring(data.indexOf(`public static class ${modlePermissionUpper} {`));
-                oldCode = oldCode.substring(0, oldCode.indexOf('}') + 1);
-                console.log(oldCode)
-                data = data.replace(oldCode, `public static class ${modlePermissionUpper} {
-        private static final String ${modlePermissionUpper} = "/ui/${selectedSys.label}/${toCamelCase(modleClassName)}";${getPublicString(modelNameList, modelNoteList)}
-    }`)
-                fs.writeFileSync(routPth, data)
-            }
-        }
-    }
-
-    const writeStringsCode = (stringsPath, data, modelNameList, modelNoteList) => {
-        if (data) {
-            let oldCode = data.substring(0, data.lastIndexOf('</resources>'));
-            // 生成strings.xml代码
-            let newCode = ""
-            for (const index in modelNameList) {
-                const modelName = modelNameList[Number(index)];
-                const modelNote = modelNoteList[Number(index)];
-                newCode = newCode + `
-    <string name="${camelToUnderscore(modelName, false)}_title">${modelNote}</string>`;
-            }
-            newCode = oldCode + newCode + `
-</resources>`;
-            if (!data.includes(`<string name="${camelToUnderscore(modelNameList[0], false)}_title">`)) {
-                fs.writeFileSync(stringsPath, newCode)
-            }
-        }
-    }
-
-    const writeXmlCode = (modelNameList, modelNoteList) => {
-        for (const index in modelNameList) {
-            const modelName = modelNameList[Number(index)]
-            const modelNote = modelNoteList[Number(index)]
-            const xmlPath = dbuPDAPath.current + '\\app\\src\\main\\res\\layout\\activity_' + camelToUnderscore(modelName, false) + '.xml';
-            ensureDirectoryExistence(xmlPath);
-            if (!fs.existsSync(xmlPath)) {
-                fs.writeFileSync(xmlPath, `<?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <!-- ${modelNote} -->
-    <data>
-
-    </data>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">    
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>`)
-            }
-        }
-    }
-
-    const writeActivityCode = (modelNameList, modelNoteList) => {
-        const modlePermissionUpper = camelToUnderscore(modelNameList[0]);
-        console.log('modelNameList--->' + modelNameList)
-        for (const index in modelNameList) {
-            // 4.生成Activity.java文件
-            const modelName = modelNameList[Number(index)]
-            const modelNote = modelNoteList[Number(index)]
-            const activityPathParentParent = dbuPDAPath.current + '\\app\\src\\main\\java\\com\\zongteng\\parcelhub\\ui\\' + selectedSys.label + '\\';
-            const activityPathParent = activityPathParentParent + toCamelCase(modelNameList[0]) + '\\';
-            const activityPath = activityPathParent + modelName + 'Activity.java';
-            ensureDirectoryExistence(activityPathParentParent);
-            ensureDirectoryExistence(activityPathParent);
-            ensureDirectoryExistence(activityPath);
-            if (!fs.existsSync(activityPath)) {
-                fs.writeFileSync(activityPath, `package com.zongteng.parcelhub.ui.${selectedSys.label}.${toCamelCase(modelNameList[0])};
-
-import android.os.Bundle;
-import com.alibaba.android.arouter.facade.annotation.Route;
-import com.zongteng.parcelhub.R;
-import com.zongteng.lib_network.router.RouterPath;
-import com.zongteng.parcelhub.base.BaseScanActivity;
-import com.zongteng.parcelhub.databinding.Activity${modelName}Binding;
-import com.zongteng.parcelhub.viewModel.${selectedSys.label}.${modelNameList[0]}ViewModel;
-/**
- * ${modelNote}
- */
-@Route(path = RouterPath.${modlePermissionUpper}.${camelToUnderscore(modelName)}_ACTIVITY)
-public class ${modelName}Activity extends BaseScanActivity<${modelNameList[0]}ViewModel, Activity${modelName}Binding> {
-
-    @Override
-    protected void onScanListener(String data) {
-        
-    }
-
-    @Override
-    public int initContentView(Bundle savedInstanceState) {
-        return R.layout.activity_${camelToUnderscore(modelName, false)};
-    }
-
-    @Override
-    public void initView() {
-
-    }
-
-    @Override
-    public void initData(Bundle savedInstanceState) {
-
-    }
-
-    @Override
-    public String showTitle() {
-        return getString(com.zongteng.lib_res.R.string.${camelToUnderscore(modelName, false)}_title);
-    }${index !== '0' ? `
-     
-    @Override
-    public boolean isShowExitDialog() {
-        return false;
-    }` : ''}
-}`)
-            }
-        }
-    }
-
-    const writeManifest = (manifestPath, data, modelNameList) => {
-        if (data) {
-            let oldCode = data.substring(0, data.lastIndexOf('</application>'));
-            // 生成Activity注册代码
-            let newCode = ""
-            const modleClassName = toCamelCase(modelNameList[0]);
-            for (const index in modelNameList) {
-                const modelName = modelNameList[Number(index)];
-                newCode = newCode + `
-        <activity
-            android:name=".ui.${selectedSys.label}.${modleClassName}.${modelName}Activity"
-            android:configChanges="orientation|screenSize|keyboardHidden|keyboard|navigation|locale|layoutDirection|uiMode|screenLayout"
-            android:exported="false"
-            android:windowSoftInputMode="adjustPan"
-            android:screenOrientation="portrait" />`
-            }
-            newCode = oldCode + newCode + `
-    </application>
-
-</manifest>`
-            if (!data.includes(`android:name=".ui.${selectedSys.label}.${toCamelCase(modleClassName)}.${modelNameList[0]}Activity"`)) {
-                fs.writeFileSync(manifestPath, newCode)
-            }
-        }
     }
 
     // 创建模块文件和代码
@@ -433,70 +227,43 @@ public class ${modelName}Activity extends BaseScanActivity<${modelNameList[0]}Vi
         }
         if (modlePermission.includes(',')) {
             modelNameList = modlePermission.split(',')
-            modleClassName = modelNameList[0]
+            modleClassName = createMoudle.toCamelCase(modelNameList[0], true)
         } else {
-            modleClassName = modlePermission
+            modleClassName = createMoudle.toCamelCase(modlePermission, true)
             modelNameList = [modlePermission]
         }
         if (selectedSys && selectedSys.label) {
             if (dbuPDAPath.current) {
                 //-----------------路由--------------------
-                const routPth = dbuPDAPath.current + '\\lib_network\\src\\main\\java\\com\\zongteng\\lib_network\\router\\RouterPath.java'
-                const modlePermissionUpper = camelToUnderscore(modleClassName);
-                if (fs.existsSync(routPth)) {
-                    fs.readFile(routPth, 'utf8', (err, data) => {
-                        writeRouterCode(routPth, data, modleClassName, modlePermissionUpper, modelNameList, modelNoteList)
-                    })
-                }
+                createMoudle.writeRouterCode(dbuPDAPath.current, modleName, modleRouter, modleClassName, modelNameList, modelNoteList, selectedSys)
                 //-----------------路由--------------------
                 //-----------------界面--------------------
                 // 1.xml文件
-                writeXmlCode(modelNameList, modelNoteList);
+                createMoudle.writeXmlCode(dbuPDAPath.current, modelNameList, modelNoteList);
                 // 2 修改strings.xml文件
                 const stringsPath = dbuPDAPath.current + '\\lib_res\\src\\main\\res\\values\\strings.xml';
                 fs.readFile(stringsPath, 'utf8', (err, data) => {
-                    writeStringsCode(stringsPath, data, modelNameList, modelNoteList)
+                    createMoudle.writeStringsCode(stringsPath, data, modelNameList, modelNoteList)
                 })
+                // 生成requestBean文件
+                createMoudle.writeRequestBeanCode(dbuPDAPath.current, modleRouter, modelClassNote, modleClassName);
+                // 生成responseBean文件
+                createMoudle.writeResponseBeanCode(dbuPDAPath.current, modleRouter, modelClassNote, modleClassName);
+                createMoudle.writeApiCode(dbuPDAPath.current, modelClassNote, modleClassName, selectedSys);
+                createMoudle.writeApiServiceCode(dbuPDAPath.current, modleRouter, modelClassNote, modleClassName, selectedSys);
+                createMoudle.writeItemLayoutCode(dbuPDAPath.current, modleRouter, modelClassNote, modleClassName);
+                createMoudle.writeAdapterCode(dbuPDAPath.current, modleRouter, modelClassNote, modleClassName, selectedSys);
                 // 3.生成Model文件
-                const modelPathParent = dbuPDAPath.current + '\\app\\src\\main\\java\\com\\zongteng\\parcelhub\\model\\' + selectedSys.label + '\\';
-                const modelPath = modelPathParent + modleClassName + 'Model.java';
-                ensureDirectoryExistence(modelPathParent);
-                ensureDirectoryExistence(modelPath);
-                if (!fs.existsSync(modelPath)) {
-                    fs.writeFileSync(modelPath, `package com.zongteng.parcelhub.model.${selectedSys.label};
-
-import com.zongteng.parcelhub.model.UploadFileModel;
-
-public class ${modleClassName}Model extends UploadFileModel {
-
-}`)
-                }
+                createMoudle.writeModelCode(dbuPDAPath.current, modleRouter, modleClassName, selectedSys)
                 // 4.生成ViewModel.java文件
-                const viewModelPathParent = dbuPDAPath.current + '\\app\\src\\main\\java\\com\\zongteng\\parcelhub\\viewModel\\' + selectedSys.label + '\\';
-                const viewModelPath = viewModelPathParent + modleClassName + 'ViewModel.java';
-                ensureDirectoryExistence(viewModelPathParent);
-                ensureDirectoryExistence(viewModelPath);
-                if (!fs.existsSync(viewModelPath)) {
-                    fs.writeFileSync(viewModelPath, `package com.zongteng.parcelhub.viewModel.${selectedSys.label};
-
-import androidx.annotation.NonNull;
-import android.app.Application;
-import com.zongteng.module_common.model.CommonViewModel;
-import com.zongteng.parcelhub.model.${selectedSys.label}.${modleClassName}Model;
-
-public class ${modleClassName}ViewModel extends CommonViewModel<${modleClassName}Model> {
-    public ${modleClassName}ViewModel(@NonNull Application application) {
-        super(application);
-    }
-}`)
-                }
+                createMoudle.writeViewModelCode(dbuPDAPath.current, modleRouter, modleClassName, selectedSys)
                 // 5.生成Activity.java文件
-                writeActivityCode(modelNameList, modelNoteList);
+                createMoudle.writeActivityCode(dbuPDAPath.current, modleRouter, modelNameList, modelNoteList, selectedSys);
                 // 6.修改AndroidManifest.xml文件
                 const manifestPath = dbuPDAPath.current + '\\app\\src\\main\\AndroidManifest.xml';
                 if (fs.existsSync(manifestPath)) {
                     fs.readFile(manifestPath, 'utf8', (err, data) => {
-                        writeManifest(manifestPath, data, modelNameList)
+                        createMoudle.writeManifest(manifestPath, modleRouter, data, modelNameList, selectedSys)
                         openNotification('模块创建执行完成')
                     })
                 }
@@ -790,7 +557,7 @@ public class ${modleClassName}ViewModel extends CommonViewModel<${modleClassName
                 ]}
             >
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <text style={{ color: '#555' }}>模块名称：</text>
+                    <div style={{ color: '#555' }}>模块名称：</div>
                     <Input style={{ flex: 1 }} onChange={(e) => {
                         if (e.target) {
                             setModleName(e.target.value)
@@ -798,7 +565,7 @@ public class ${modleClassName}ViewModel extends CommonViewModel<${modleClassName
                     }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: '10px' }}>
-                    <text style={{ color: '#555' }}>模块权限：</text>
+                    <div style={{ color: '#555' }}>模块权限：</div>
                     <Input style={{ flex: 1 }} onChange={(e) => {
                         if (e.target) {
                             setModlePermission(e.target.value)
@@ -806,7 +573,15 @@ public class ${modleClassName}ViewModel extends CommonViewModel<${modleClassName
                     }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: '10px' }}>
-                    <text style={{ color: '#555' }}>模块系统：</text>
+                    <div style={{ color: '#555' }}>模块路由：</div>
+                    <Input style={{ flex: 1 }} onChange={(e) => {
+                        if (e.target) {
+                            setModleRouter(e.target.value)
+                        }
+                    }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: '10px' }}>
+                    <div style={{ color: '#555' }}>模块系统：</div>
                     <Dropdown overlay={menu} trigger={['click']} selectable>
                         <Space>
                             {selectedSys && selectedSys.label || '请选择系统'}

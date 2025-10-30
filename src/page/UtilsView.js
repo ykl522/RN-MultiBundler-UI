@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 const { Button, Modal, notification, Checkbox, Menu, Dropdown, Input, Drawer } = require('antd');
 const { remote } = require("electron");
 import { DownOutlined } from '@ant-design/icons';

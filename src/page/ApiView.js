@@ -6,7 +6,7 @@
  * @FilePath: \RN-MultiBundler-UI\src\page\ApiView.js
  * @Description: Api调试
  */
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 const { Button, Input, notification } = require('antd');
 import { post, get, uploadFile, getUploadUrl } from '../net/HttpRequest';
 const { remote } = require("electron");
@@ -61,7 +61,7 @@ export default function ApiView(props) {
             <Input.TextArea rows={5} style={{ marginTop: 10 }} placeholder={'请输入请求Headers'} onChange={(e) => {
                 if (e.target.value) {
                     var obj = {};
-                    e.target.value.split('\n').forEach(function(line) {
+                    e.target.value.split('\n').forEach(function (line) {
                         if (line.trim() === "") return;
                         var parts = line.split(':');
                         var key = parts[0].trim();
@@ -84,15 +84,15 @@ export default function ApiView(props) {
                     setResponseResult('')
                     setLoadingTime(0)
                     requestTime.current = new Date().getTime()
-                    post(stateRef.current.url, stateRef.current.params ? JSON.parse(stateRef.current.params) : null, 
+                    post(stateRef.current.url, stateRef.current.params ? JSON.parse(stateRef.current.params) : null,
                         stateRef.current.headers ? { headers: stateRef.current.headers } : null).then((res) => {
-                        setLoadingTime(new Date().getTime() - requestTime.current)
-                        setResponseResult(JSON.stringify(res, null, 2))
-                    }).catch((err) => {
-                        if (err && err.message) {
-                            openNotification('bottomRight', err.message)
-                        }
-                    })
+                            setLoadingTime(new Date().getTime() - requestTime.current)
+                            setResponseResult(JSON.stringify(res, null, 2))
+                        }).catch((err) => {
+                            if (err && err.message) {
+                                openNotification('bottomRight', err.message)
+                            }
+                        })
                 }}>POST</Button>
                 <Button style={{ width: 100, marginLeft: 20 }} loading={loadingTime === 0} onClick={() => {
                     if (!stateRef.current.url) {
