@@ -14,25 +14,19 @@ import path from "path";
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow, loadingWindow;
-process.on("unhandledRejection", (reason, p) => {
-  console.log("Unhandled Rejection at: Promise", p, "reason:", reason);
-  // application specific logging, throwing an error, or other logic here
-});
-const isDevMode = process.execPath.match(/[\\/]electron/);
-
-if (isDevMode) enableLiveReload({ strategy: "react-hmr" });
-
 // 添加全局异常捕获
 process.on('uncaughtException', (error) => {
-  alert('未捕获的异常:' + error);
+  console.error('未捕获的异常:' + error);
   // 可以将错误日志写入文件或发送到远程服务器
   // 例如: fs.appendFileSync('error.log', `${new Date().toISOString()}: ${error.stack}\n`);
 });
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('未处理的 Promise 拒绝:', reason);
-  // 可以将错误日志写入文件或发送到远程服务器
+process.on("unhandledRejection", (reason, p) => {
+  console.log("未处理的 Promise 拒绝:: Promise", p, "reason:", reason);
+  // application specific logging, throwing an error, or other logic here
 });
+const isDevMode = process.execPath.match(/[\\/]electron/);
+if (isDevMode) enableLiveReload({ strategy: "react-hmr" });
+
 
 const createLoadingWindow = () => {
   try {
@@ -235,19 +229,23 @@ const createWindow = async () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-  createLoadingWindow();
-  createWindow();
-  ipcMain.on("close-loading-window", (_e, res) => {
-    if (res && res.isClose) {
-      if (loadingWindow) loadingWindow.close();
-      if (mainWindow) mainWindow.show();
-    }
-    mainWindow.webContents.send(
-      "ExePath",
-      path.dirname(app.getPath("exe")).replace(/\\/g, "/")
-    );
-    mainWindow.webContents.send("DownloadPath", app.getPath("downloads"));
-  });
+  try {
+    createLoadingWindow();
+    createWindow();
+    ipcMain.on("close-loading-window", (_e, res) => {
+      if (res && res.isClose) {
+        if (loadingWindow) loadingWindow.close();
+        if (mainWindow) mainWindow.show();
+      }
+      mainWindow.webContents.send(
+        "ExePath",
+        path.dirname(app.getPath("exe")).replace(/\\/g, "/")
+      );
+      mainWindow.webContents.send("DownloadPath", app.getPath("downloads"));
+    });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 // Quit when all windows are closed.

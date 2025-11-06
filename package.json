@@ -1,7 +1,7 @@
 {
   "name": "multibundler_ui",
   "productName": "APP开发工具",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "主要功能：可视化RN拆包，可一键打包",
   "main": "src/index.js",
   "scripts": {
@@ -54,6 +54,7 @@
     }
   },
   "dependencies": {
+    "@types/react": "^19.2.2",
     "antd": "4.23.6",
     "axios": "^0.20.0",
     "cross-spawn": "^7.0.3",
@@ -66,7 +67,7 @@
     "qrcode.react": "^3.1.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "react-draggable": "^4.4.6",
+    "react-draggable": "4.4.4",
     "react-hot-loader": "^3.0.0-beta.6"
   },
   "devDependencies": {
