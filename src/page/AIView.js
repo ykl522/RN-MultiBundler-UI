@@ -153,6 +153,13 @@ export default function InterfaceView(props) {
                         setOutputTextArea('')
                     }}
                 >清空</Button>
+                <Button
+                    style={{ width: 150, marginTop: 15, marginBottom: 15, marginRight: 15 }}
+                    onClick={() => {
+                        const { shell } = require('electron')
+                        shell.openExternal('https://chat.deepseek.com/')
+                    }}
+                >DeepSeek网站</Button>
             </div>
             <Input.TextArea placeholder={'此处输出DeepSeek回答的答案'} onChange={(e) => {
                 setInputTextArea(e.target.value)

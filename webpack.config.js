@@ -1,14 +1,35 @@
-/**
- * @Author: 康乐 yuankangle@gmail.com
- * @Date: 2022-11-03 14:37:26
- * @LastEditors: 康乐 yuankangle@gmail.com
- * @LastEditTime: 2023-03-02 15:29:27
- * @FilePath: \ops_pdad:\Git\RN-MultiBundler-UI\webpack.config.js
- * @Description: 
- * @
- * @Copyright (c) 2023 by 康乐 yuankangle@gmail.com, All Rights Reserved. 
- */
 module.exports = {
+    packagerConfig: {
+        // 仅打包必要的文件
+        ignore: /(^\/(src|resources)$|\.git)/,
+    },
+    makers: [
+        {
+            name: '@electron-forge/maker-squirrel',
+            config: {},
+        },
+        {
+            name: '@electron-forge/maker-zip',
+            platforms: ['darwin'],
+        },
+        {
+            name: '@electron-forge/maker-deb',
+            config: {},
+        },
+        {
+            name: '@electron-forge/maker-rpm',
+            config: {},
+        },
+    ],
+    webpackConfig: {
+        // 优化Webpack配置，例如使用缓存等
+        mode: 'production',
+        optimization: {
+            splitChunks: {
+                chunks: 'all',
+            },
+        },
+    },
     module: { //所有第三方模块的配置规则，只要webpack处理不了的，都会来这里找
         rules: [
             { test: /\.(js|jsx|ts|tsx)$/, use: 'babel-loader', exclude: /node_modules/ },
