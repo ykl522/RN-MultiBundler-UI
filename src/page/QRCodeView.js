@@ -25,9 +25,27 @@ export default function QRCodeView() {
         });
     };
 
+    const validateCode128Input = (input) => {
+        // 检查是否为空或仅包含空格
+        if (!input || !input.trim()) {
+            openNotification('bottomRight', '请输入有效的内容。');
+            return false;
+        }
+
+        // 检查是否包含非法字符（仅允许 ASCII 可打印字符）
+        const validChars = /^[\x00-\x7F]+$/; // 匹配 ASCII 0-127 范围内的字符
+        if (!validChars.test(input)) {
+            openNotification('bottomRight', `输入内容"${input}"包含非法字符，请检查并重新输入。`);
+            return false;
+        }
+
+        return true;
+    };
+
     useEffect(() => {
         if (code.value && code.type == 2) {
-            codeRef.current && codeRef.current.split(' ').map((v, i) => {
+            const validValues = code.value.split(' ').filter(v => v && validateCode128Input(v));
+            validValues.forEach((v, i) => {
                 v && Barcode(jsBarcodeRefs[i], v, {
                     format: 'CODE128',
                     renderer: 'svg',
@@ -71,17 +89,19 @@ export default function QRCodeView() {
             </div>
             <div style={{ padding: 20 }}>
                 {
-                    code.value && code.type == 1 ?
-                        <QRCode
-                            value={code.value}// 生成二维码的内容
-                            size={300} // 二维码的大小
+                    code.value && code.type == 1 && code.value.split(' ').map((v, i) =>
+                        v && <QRCode
+                            style={{ marginRight: 50, marginBottom: 50 }}
+                            value={v}// 生成二维码的内容
+                            size={250} // 二维码的大小
                             fgColor="#000000" // 二维码的颜色
                             imageSettings={{ // 中间有图片logo
                                 height: 60,
                                 width: 60,
                                 excavate: true
                             }}
-                        /> : null
+                        />
+                    )
                 }
                 <div >
                     {
