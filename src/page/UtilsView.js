@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-const { Button, Modal, notification, Checkbox, Menu, Dropdown, Input, Drawer } = require('antd');
+const { Button, Modal, notification, Checkbox, Menu, Dropdown, Input, Drawer, Space } = require('antd');
 const { remote } = require("electron");
 import { DownOutlined } from '@ant-design/icons';
 import { workSpace } from '../config'
 import WinExec from '../utils/WinExec';
+import ReactJson from 'react-json-view';
 
 /**
  * 其他工具
@@ -14,11 +15,74 @@ export default function UtilsView(props) {
 
     const [quantity, setQuantity] = useState(0);
     const [open, setOpen] = useState(false);
+    const [jsonModalVisible, setJsonModalVisible] = useState(false);
+    const [jsonString, setJsonString] = useState('');
+    const [parsedJson, setParsedJson] = useState(null);
+    const [jsonError, setJsonError] = useState('');
+    
     const showDrawer = () => {
         setOpen(true);
     };
     const onClose = () => {
         setOpen(false);
+    };
+    
+    const showJsonModal = () => {
+        setJsonModalVisible(true);
+    };
+    
+    const closeJsonModal = () => {
+        setJsonModalVisible(false);
+        setJsonString('');
+        setParsedJson(null);
+        setJsonError('');
+    };
+    
+    const handleJsonChange = (e) => {
+        const value = e.target.value;
+        setJsonString(value);
+        
+        if (value.trim() !== '') {
+            let parsedJsonResult;
+            let errorOccurred = false;
+            
+            try {
+                // 检查字符串是否有首尾引号
+                if (value.startsWith('"') && value.endsWith('"')) {
+                    // 有首尾引号，处理为序列化的JSON字符串
+                    let unescapedStr = value.substring(1, value.length - 1);
+                    
+                    // 处理常见的转义字符，顺序很重要
+                    unescapedStr = unescapedStr
+                        .replace(/\\\\/g, '\\')  // 先处理转义的反斜杠
+                        .replace(/\\"/g, '"')     // 处理转义的引号
+                        .replace(/\\n/g, '\n')    // 处理转义的换行符
+                        .replace(/\\r/g, '\r')    // 处理转义的回车符
+                        .replace(/\\t/g, '\t')    // 处理转义的制表符
+                        .replace(/\\b/g, '\b')    // 处理转义的退格符
+                        .replace(/\\f/g, '\f');   // 处理转义的换页符
+                    
+                    parsedJsonResult = JSON.parse(unescapedStr);
+                    setJsonError('');
+                } else {
+                    // 没有首尾引号，直接尝试解析
+                    parsedJsonResult = JSON.parse(value);
+                    setJsonError('');
+                }
+            } catch (error) {
+                setJsonError(`JSON 解析错误: ${error.message}`);
+                errorOccurred = true;
+            }
+            
+            if (!errorOccurred) {
+                setParsedJson(parsedJsonResult);
+            } else {
+                setParsedJson(null);
+            }
+        } else {
+            setParsedJson(null);
+            setJsonError('');
+        }
     };
 
     const calculateMinCostWithPlan = (totalQuantity, items) => {
@@ -142,7 +206,50 @@ export default function UtilsView(props) {
                     );
                 }}>计算</Button>
                 <Button style={{ width: 150, marginTop: 15, marginBottom: 15, marginRight: 15 }} onClick={showDrawer}>成本优化方案计算</Button>
+                <Button style={{ width: 150, marginTop: 15, marginBottom: 15, marginRight: 15 }} onClick={showJsonModal}>JSON格式化浏览</Button>
             </div>
+            
+            <Modal
+                title="JSON格式化浏览"
+                width={800}
+                open={jsonModalVisible}
+                onCancel={closeJsonModal}
+                footer={[
+                    <Button key="back" onClick={closeJsonModal}>关闭</Button>,
+                ]}
+            >
+                <Space direction="vertical" style={{ width: '100%' }}>
+                    <Input.TextArea 
+                        rows={8} 
+                        placeholder="请粘贴您的JSON字符串" 
+                        value={jsonString}
+                        onChange={handleJsonChange}
+                    />
+                    {jsonError && <div style={{ color: 'red' }}>{jsonError}</div>}
+                    {parsedJson !== null && typeof parsedJson !== 'undefined' && (
+                        <div style={{ 
+                            maxHeight: '400px',
+                            overflow: 'auto',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            padding: '10px',
+                            backgroundColor: '#fafafa'
+                        }}>
+                            <ReactJson 
+                                src={parsedJson} 
+                                theme="rjv-default"
+                                indentWidth={2}
+                                collapsed={false}
+                                collapseStringsAfterLength={100}
+                                enableClipboard={true}
+                                displayDataTypes={false}
+                                displayObjectSize={true}
+                            />
+                        </div>
+                    )}
+                </Space>
+            </Modal>
+            
             <Drawer title="成本优化方案计算" width={800} placement="right" onClose={onClose} open={open}>
                 <iframe
                     style={{ width: '100%', height: '98%', overflow: 'auto' }}
